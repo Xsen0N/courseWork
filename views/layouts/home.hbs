@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <title>Главная страница</title>
+    <style>
+        /* Общие стили */
+        body {
+            font-family: 'Roboto', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f9;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        h1, h2 {
+            color: #2c3e50;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+
+        h2 {
+            font-size: 1.8rem;
+            margin-top: 0;
+            color: #555;
+        }
+
+        /* Стили для хедера */
+        .header1 {
+            background: linear-gradient(135deg, #3498db, #2980b9);
+            color: #fff;
+            padding: 40px 20px;
+            text-align: center;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .header1 h1 {
+            margin: 0;
+            font-size: 3rem;
+        }
+
+        .header1 p {
+            font-size: 1.2rem;
+            margin-top: 10px;
+        }
+
+        /* Стили для карточек типов */
+        .types-card {
+            background-color: #fff;
+            border-radius: 12px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            margin: 20px 10px;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            flex: 1 1 calc(33.333% - 40px);
+            box-sizing: border-box;
+        }
+
+        .types-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .types-card h2 {
+            color: #2c3e50;
+            font-size: 1.5rem;
+            margin-bottom: 10px;
+        }
+
+        .types-card p {
+            color: #666;
+            font-size: 1rem;
+            line-height: 1.6;
+        }
+
+        /* Стили для контейнера курсов */
+        #course-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            margin-top: 30px;
+        }
+
+        /* Адаптивность */
+        @media (max-width: 768px) {
+            .types-card {
+                flex: 1 1 calc(50% - 40px);
+            }
+        }
+
+        @media (max-width: 480px) {
+            .types-card {
+                flex: 1 1 100%;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    {{> header}}
+
+    <div class="container">
+        <div class="header1">
+            <h1>Платформа для подбора персонала на частные мероприятия</h1>
+            <p>Ищете профессионалов для вашего мероприятия? Мы предлагаем широкий выбор специалистов!</p>
+        </div>
+
+        <div id="course-container">
+            {{#each types}}
+            <div class="types-card">
+                <h2>{{TypeName}}</h2>
+                <p>{{this.Description}}</p>
+            </div>
+            {{/each}}
+        </div>
+    </div>
+</body>
+
+</html>

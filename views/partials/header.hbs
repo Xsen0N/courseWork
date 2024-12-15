@@ -1,0 +1,134 @@
+<header class="header">
+    <nav class="nav">
+        <ul>
+            <li><a href="/masters">Преподаватели</a></li>
+            <li><a href="/services">Наши услуги</a></li>
+            <li><a href="/">С чем можем помочь..</a></li>
+            <li id="my-applications" style="display: none;"><a href="/enrollment/order">Мои заявки</a></li>
+            <li id="login-logout"><a id="login-logout-link" href="/auth/login">Вход</a></li>
+            <li id="login-master" style="display: none;"><a href="/auth/loginMaster">Вход как мастер</a></li>
+        </ul>
+    </nav>
+</header>
+<style>
+     /* Стили для хедера */
+    .header {
+        background-color: #4CAF50; /* Зеленый цвет фона */
+        color: #fff;
+        padding: 20px 0;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2); /* Тень для визуального выделения */
+    }
+
+    .nav {
+        text-align: center;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .nav ul {
+        list-style-type: none;
+        padding: 0;
+        margin: 0;
+        display: flex;
+        gap: 15px; /* Расстояние между элементами меню */
+    }
+
+    .nav ul li {
+        display: inline-block;
+    }
+
+    .nav ul li a {
+        color: #fff;
+        text-decoration: none;
+        padding: 10px 15px;
+        border-radius: 5px;
+        transition: background-color 0.3s ease, transform 0.3s ease;
+        font-size: 1rem;
+    }
+
+    .nav ul li a:hover {
+        background-color: #45a049; /* Темно-зеленый цвет при наведении */
+        transform: translateY(-2px); /* Легкое поднятие при наведении */
+    }
+
+    #login-logout {
+        margin-left: auto; /* Сдвигаем кнопку "Вход/Выход" вправо */
+        padding-right: 20px;
+    }
+
+    #login-logout-link {
+        color: #fff;
+        text-decoration: none;
+        padding: 10px 15px;
+        border-radius: 5px;
+        transition: background-color 0.3s ease, transform 0.3s ease;
+    }
+
+    #login-logout-link:hover {
+        background-color: #45a049; /* Темно-зеленый цвет при наведении */
+        transform: translateY(-2px); /* Легкое поднятие при наведении */
+    }
+
+    /* Адаптивность */
+    @media (max-width: 768px) {
+        .nav ul {
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .nav ul li {
+            width: 100%;
+            text-align: center;
+        }
+
+        #login-logout {
+            margin-left: 0;
+            padding-right: 0;
+        }
+    }
+</style>
+
+<script>
+   document.addEventListener('DOMContentLoaded', function () {
+    const loginLogoutLink = document.getElementById('login-logout-link');
+    const loginMasterLink = document.getElementById('login-master');
+    const myApplicationsLink = document.getElementById('my-applications');
+
+    const xhr = new XMLHttpRequest();
+    xhr.onreadystatechange = function () {
+        if (xhr.readyState === XMLHttpRequest.DONE) {
+            if (xhr.status === 200) {
+                const user = JSON.parse(xhr.responseText);
+
+                // Проверка на авторизацию
+                if (user.isAuthenticated) {
+                    // Если пользователь авторизован
+                    loginLogoutLink.textContent = 'Выход';
+                    loginLogoutLink.href = '/auth/logout';
+                    myApplicationsLink.style.display = 'inline-block';
+
+                    loginMasterLink.style.display = 'none';
+                } else {
+                    // Если пользователь не авторизован
+                    loginLogoutLink.textContent = 'Вход';
+                    loginLogoutLink.href = '/auth/login';
+
+                    // Прячем "Мои заявки"
+                    myApplicationsLink.style.display = 'none';
+
+                    // Показываем "Вход как мастер"
+                    loginMasterLink.style.display = 'inline-block';
+                }
+            } else {
+                console.error('Произошла ошибка при выполнении AJAX-запроса');
+            }
+        }
+    };
+
+    xhr.open('GET', '/auth/status', true); 
+    xhr.send();
+});
+
+
+</script>

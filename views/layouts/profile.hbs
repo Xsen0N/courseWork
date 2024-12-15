@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profile</title>
+    <link rel="stylesheet" href="/styles/profile.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+        }
+        img {
+        max-width: 250px;
+        max-height: 250px;
+    }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        header h1 {
+            text-align: center;
+            margin-bottom: 20px;
+            color: #333;
+        }
+
+        .profile-container {
+            display: flex;
+            justify-content: center;
+            background-color: #fff;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+        }
+
+        .profile-details,
+        .profile-actions {
+            flex: 1;
+            padding: 20px;
+        }
+
+        .profile-details p {
+            margin: 10px 0;
+            color: #666;
+        }
+
+        .profile-actions form {
+            text-align: center;
+        }
+
+        .profile-actions form label {
+            display: block;
+            margin-bottom: 10px;
+            color: #333;
+        }
+
+        .profile-actions form input[type="text"],
+        .profile-actions form textarea {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 15px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+            box-sizing: border-box;
+        }
+
+        .profile-actions form button[type="submit"] {
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .profile-actions form button[type="submit"]:hover {
+            background-color: #0056b3;
+            margin: 10px;
+        }
+    </style>
+</head>
+<body>
+    {{> masterHeader}}
+    <div class="container">
+        <header>
+            <h1>Ваш профиль, {{master.Name}}</h1>
+        </header>
+        <div class="profile-container">
+            <div class="profile-details">
+                <div class="profile-photo">
+                    {{#if master.Photo}}
+                        <img src="data:{{master.PhotoType}};base64,{{master.Photo}}" alt="Profile Photo of {{master.Name}}">
+                    {{else}}
+                        <img src="/images/default-profile.png" alt="Default Profile Photo">
+                    {{/if}}
+                </div>
+                <p><strong>Master ID:</strong> {{master.MasterId}}</p>
+                <p><strong>Ваше имя:</strong> {{master.Name}}</p>
+                <p><strong>Ваш логин от аккаунта:</strong> {{master.Login}}</p>
+                {{#if master.Description}}
+                    <p><strong>Description:</strong> {{master.Description}}</p>
+                {{else}}
+                    <p><strong>Description:</strong> Пока нет описания, необходимо добавить!</p>
+                {{/if}}
+            </div>
+            <div class="profile-actions">
+                <h2>Редактировать профиль</h2>
+                <form action="/profile/editProfile" method="POST">
+                    <label for="name">Имя:</label>
+                    <input type="text" id="name" name="name" value="{{master.Name}}" required>
+                    
+                    <label for="description">Описание:</label>
+                    <textarea id="description" name="description">{{master.Description}}</textarea>
+                    
+                    <button type="submit">Сохранить изменения</button>
+                </form>
+                <hr>
+                <h2>Загрузить новую фотографию профиля</h2>
+                <form action="/profile/upload-photo" method="POST" enctype="multipart/form-data" onsubmit="return validateFileSize(this.photo)">
+                    <label for="photo">Выберите файл:</label>
+                    <input type="file" name="photo" accept="image/png, image/jpeg" required>
+                    <br>
+                    <br>
+                    <button type="submit">Загрузить</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

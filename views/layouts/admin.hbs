@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Курсы</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+        }
+
+        .admin-header {
+            background-color: #333;
+            color: #fff;
+            padding: 10px;
+            text-align: center;
+        }
+
+        .classes {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: flex-start;
+            padding: 20px;
+            gap: 20px;
+        }
+
+        .class-card {
+            background-color: #fff;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            width: calc(33.33% - 40px);
+            max-width: 300px;
+        }
+
+        .class-card button {
+            background-color: #007bff;
+            border: none;
+            color: #fff;
+            padding: 8px 16px;
+            cursor: pointer;
+            border-radius: 5px;
+            transition: background-color 0.3s ease;
+        }
+
+        .class-card button:hover {
+            background-color: #0056b3;
+        }
+
+    </style>
+</head>
+
+<body>
+    {{> adminHeader}}
+    <h1> Это панель администратора</h1>
+    <h2>Вот все классы, что у нас есть</h2>
+    <div class="classes">
+        {{#each classes}}
+        <div class="class-card" data-type="{{TypeName}}" data-name="{{Name}}">
+            <h3>{{Name}}</h3>
+            <p>{{Description}}</p>
+            <p><strong>Master:</strong> {{Master}}</p>
+            <p><strong>Type:</strong> {{TypeName}}</p>
+            <button class="delete-button" data-class-id="{{this.ClassId}}">Удалить</button>
+        </div>
+        {{else}}
+        <p>No classes found.</p>
+        {{/each}}
+    </div>
+
+    <script>
+        document.querySelectorAll('.delete-button').forEach(button => {
+            button.addEventListener('click', async () => {
+
+                const classId = button.dataset.classId;
+                try {
+                    if (confirm('Вы уверены, что хотите удалить этот мастер-класс?')) {
+                        const response = await fetch(`/admin/deleteClass/${classId}`, {
+                            method: 'DELETE'
+                        });
+                        if (response.ok) {
+                            window.location.reload();
+                        } else {
+                            console.error('Ошибка при удалении мастер-класса');
+                        }
+                    }
+                } catch (error) {
+                    console.error('Ошибка при удалении мастер-класса:', error);
+                }
+            });
+        });
+    </script>
+
+</body>
+
+</html>

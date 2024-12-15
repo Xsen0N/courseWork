@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Изменение мастеров</title>
+    <style>
+        img {
+            max-width: 200px;
+            max-height: 200px;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f5f5f5;
+            margin: 0;
+            padding: 0;
+        }
+
+        .admin-header {
+            background-color: #333;
+            color: #fff;
+            padding: 20px 0;
+            text-align: center;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 10px;
+            box-shadow: 0px 0px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-top: 0;
+        }
+
+        .masters-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            grid-gap: 20px;
+        }
+
+        .master-card {
+            background-color: #f9f9f9;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            padding: 20px;
+        }
+
+        .master-card h2 {
+            color: #333;
+            margin-top: 0;
+        }
+
+        .master-card img {
+            max-width: 100%;
+            height: auto;
+            display: block;
+            margin-bottom: 10px;
+        }
+
+        .master-card p {
+            color: #666;
+            margin: 5px 0;
+        }
+
+        .button-container {
+            text-align: center;
+        }
+
+        .edit-button {
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            text-decoration: none;
+            transition: background-color 0.3s;
+        }
+        .delete-button {
+            background-color: #f1354e;
+            color: #fff;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            text-decoration: none;
+            transition: background-color 0.3s;
+        }
+
+        .edit-button:hover {
+            background-color: #0056b3;
+        }
+        .delete-button:hover {
+            background-color: #b3001e;
+        }
+    </style>
+</head>
+
+<body>
+    {{> adminHeader}}
+
+    <div class="container">
+        <h1>Изменение мастеров</h1>
+        {{#if masters.length}}
+        <div class="masters-container">
+            {{#each masters}}
+            <div class="master-card">
+                <h2>{{this.Name}}</h2>
+                <img src="data:image/jpeg;base64,{{this.Photo}}" alt="Здесь должна быть фотка" />
+                <p>Id мастера: {{this.MasterId}}</p>
+                <p>Логин: {{this.Login}}</p>
+                <p style="margin-bottom: 10px;">Описание: {{this.Description}}</p>
+                <br> <br>
+
+                <div class="button-container">
+                    <a href="/admin/updateMaster/{{this.MasterId}}" class="edit-button">Изменить</a>
+                    <button class="delete-button" data-master-id="{{this.MasterId}}">Удалить</button>
+                </div>
+            </div>
+            {{/each}}
+        </div>
+        {{else}}
+        <p>Нет доступных мастеров</p>
+        {{/if}}
+    </div>
+    <script>
+        document.querySelectorAll('.delete-button').forEach(button => {
+            button.addEventListener('click', async () => {
+
+                const masterId = button.dataset.masterId;
+                try {
+                    if (confirm('Вы уверены, что хотите удалить этого мастера?')) {
+                        const response = await fetch(`/admin/deleteMaster/${masterId}`, {
+                            method: 'DELETE'
+                        });
+                        if (response.ok) {
+                            window.location.reload();
+                        } else {
+                            console.error('Ошибка при удалении мастера');
+                        }
+                    }
+                } catch (error) {
+                    console.error('Ошибка при удалении мастера:', error);
+                }
+            });
+        });
+    </script>
+
+</body>
+
+</html>

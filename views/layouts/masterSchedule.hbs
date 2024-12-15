@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Расписания классов</title>
+        <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f5f5f5;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 10px;
+            box-shadow: 0px 0px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .schedule-card {
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            padding: 10px;
+            margin-bottom: 10px;
+        }
+
+        .schedule-card h2 {
+            margin-top: 0;
+            color: #333;
+        }
+
+        .schedule-card p {
+            margin: 5px 0;
+            color: #666;
+        }
+
+        .schedule-card button {
+            background-color: #dc3545;
+            color: #fff;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .schedule-card button:hover {
+            background-color: #c82333;
+        }
+
+        .add-schedule-form {
+            margin-top: 20px;
+        }
+
+        .add-schedule-form h2 {
+            margin-top: 0;
+            color: #333;
+        }
+
+        .add-schedule-form label {
+            display: block;
+            margin-bottom: 5px;
+            color: #555;
+        }
+
+        .add-schedule-form select,
+        .add-schedule-form input[type="datetime-local"],
+        .add-schedule-form input[type="number"] {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            box-sizing: border-box;
+        }
+
+        .add-schedule-form button {
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .add-schedule-form button:hover {
+            background-color: #0056b3;
+        }
+
+        /* Responsive styles */
+        @media screen and (max-width: 600px) {
+            .container {
+                padding: 10px;
+            }
+
+            .schedule-card {
+                padding: 8px;
+            }
+
+            .add-schedule-form select,
+            .add-schedule-form input[type="datetime-local"],
+            .add-schedule-form input[type="number"] {
+                padding: 6px;
+                margin-bottom: 8px;
+            }
+
+            .add-schedule-form button {
+                padding: 8px 16px;
+            }
+        }
+    </style>
+</head>
+<body>
+    {{> masterHeader}}
+    <div class="container">
+        
+        {{#each schedules}}
+            <div class="schedule-card" data-schedule-id="{{SchedulerId}}">
+                <h2>{{ClassName}}</h2>
+                <p><strong>Дата:</strong> {{formatDate DateClass}}</p>
+                <p><strong>Всего мест:</strong> {{TotalSpots}}</p>
+                <p><strong>Доступно мест:</strong> {{AvailableSpots}}</p>
+                <button type="button" class="delete-button" onclick="deleteSchedule('{{SchedulerId}}')">Удалить</button>
+            </div>
+        {{/each}}
+
+        
+        <div class="add-schedule-form">
+            <h2>Добавить новое расписание</h2>
+            <form id="add-schedule-form" action="/profile/addSchedule" method="POST" onsubmit="return validateForm()">
+                <div>
+                    <label for="class-id">Класс:</label>
+                    <select id="class-id" name="ClassId" required>
+                        {{#each classes}}
+                            <option value="{{this.ClassId}}">{{this.Name}}</option>
+                        {{/each}}
+                    </select>
+                </div>
+                <div>
+                    <label for="date-class">Дата и время:</label>
+                    <input type="datetime-local" id="date-class" name="DateClass" required>
+                </div>
+                <div>
+                    <label for="total-spots">Всего мест:</label>
+                    <input type="number" id="total-spots" name="TotalSpots" max="30" min="5" required>
+                </div>
+                <div>
+                    <label for="available-spots">Доступно мест:</label>
+                    <input type="number" id="available-spots" name="AvailableSpots" min="1" required>
+                </div>
+                <input type="hidden" name="Status" value="2">
+                <button type="submit">Добавить</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        function deleteSchedule(scheduleId) {
+            if (confirm('Вы уверены, что хотите удалить это расписание?')) {
+                fetch(`/profile/deleteSchedule/${scheduleId}`, {
+                    method: 'DELETE'
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        document.querySelector(`[data-schedule-id="${scheduleId}"]`).remove();
+                         window.location.reload();
+                        
+                    } else {
+                        alert('Ошибка при удалении расписания.');
+                    }
+                });
+            }
+        }
+
+        Handlebars.registerHelper('formatDate', function(date) {
+            const options = { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' };
+            return new Date(date).toLocaleDateString('ru-RU', options);
+        });
+
+        // Form validation
+        function validateForm() {
+            const dateClass = document.getElementById('date-class').value;
+            const totalSpots = parseInt(document.getElementById('total-spots').value);
+            const availableSpots = parseInt(document.getElementById('available-spots').value);
+            const date = new Date(dateClass);
+            const now = new Date();
+            now.setHours(0, 0, 0, 0);
+            const tomorrow = new Date(now);
+            tomorrow.setDate(tomorrow.getDate() + 1);
+
+            if (date < tomorrow) {
+                alert('Дата и время должны быть минимум завтра.');
+                return false;
+            }
+
+            if (totalSpots > 30) {
+                alert('Общее количество мест не может превышать 30.');
+                return false;
+            }
+
+            if (availableSpots > totalSpots) {
+                alert('Доступное количество мест не может превышать общее количество мест.');
+                return false;
+            }
+
+            return true;
+        }
+
+        window.onload = function() {
+            const dateClassInput = document.getElementById('date-class');
+            const now = new Date();
+            now.setHours(0, 0, 0, 0);
+            const tomorrow = new Date(now);
+            tomorrow.setDate(tomorrow.getDate() + 1);
+            const year = tomorrow.getFullYear();
+            const month = ('0' + (tomorrow.getMonth() + 1)).slice(-2);
+            const day = ('0' + tomorrow.getDate()).slice(-2);
+            const minDate = `${year}-${month}-${day}T00:00`;
+            dateClassInput.setAttribute('min', minDate);
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Service</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f9f9f9;
+            margin: 0;
+            padding: 0;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 20px auto;
+            padding: 0 20px;
+        }
+
+        /* Стили для поиска и фильтра */
+        #search {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 20px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 1rem;
+            transition: border-color 0.3s;
+        }
+
+        #search:focus {
+            border-color: #007bff;
+            outline: none;
+        }
+
+        #type {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 20px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 1rem;
+            transition: border-color 0.3s;
+        }
+
+        #type:focus {
+            border-color: #007bff;
+            outline: none;
+        }
+
+        /* Стили для карточек услуг */
+        .services {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .class-card {
+            background-color: #fff;
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            padding: 20px;
+            width: calc(33.33% - 20px);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .class-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15);
+        }
+
+        .class-card h3 {
+            margin-top: 0;
+            font-size: 1.2rem;
+            color: #007bff;
+        }
+
+        .class-card p {
+            margin: 10px 0;
+            color: #666;
+            font-size: 1rem;
+        }
+
+        .class-card strong {
+            color: #333;
+        }
+
+        /* Стили для кнопки "Записаться" */
+        .details-button {
+            background-color: #007bff;
+            border: none;
+            color: #fff;
+            padding: 10px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: background-color 0.3s, transform 0.3s;
+        }
+
+        .details-button:hover {
+            background-color: #0056b3;
+            transform: translateY(-2px);
+        }
+
+        /* Адаптивность */
+        @media (max-width: 992px) {
+            .class-card {
+                width: calc(50% - 20px);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .class-card {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+
+<body>
+     {{> header}}
+
+    <div class="container">
+        <!-- Search form -->
+        <input type="text" id="search" placeholder="Search service" oninput="filterClasses()">
+
+        <select id="type" onchange="filterClasses()">
+            <option value="All">All Types</option>
+            {{#each types}}
+            <option value="{{TypeName}}">{{TypeName}}</option>
+            {{/each}}
+        </select>
+
+        <div class="services">
+            {{#each services}}
+            <div class="class-card" data-type="{{TypeName}}" data-name="{{Name}}">
+                <h3>{{Name}}</h3>
+                <p>Описание: {{Description}}</p>
+                <p><strong>Специалист:</strong> {{Master}}</p>
+                <p><strong>Вид мероприятия:</strong> {{TypeName}}</p>
+                <p><strong>Локация:</strong> {{Location}}</p>
+                <button class="details-button" data-class-id="{{ServiceId}}">Записаться!</button>
+            </div>
+            {{else}}
+            <p>No services found.</p>
+            {{/each}}
+        </div>
+    </div>
+
+    <script>
+        function filterClasses() {
+            var type = document.getElementById("type").value;
+            var query = document.getElementById("search").value;
+
+            var classes = document.getElementsByClassName("class-card");
+
+            for (var i = 0; i < classes.length; i++) {
+                var classCard = classes[i];
+                var typeName = classCard.getAttribute("data-type");
+                var name = classCard.getAttribute("data-name");
+
+                var typeMatch = type === "All" || type === typeName;
+                var queryMatch = name.toLowerCase().includes(query.toLowerCase());
+
+                if (typeMatch && queryMatch) {
+                    classCard.style.display = "block";
+                } else {
+                    classCard.style.display = "none";
+                }
+            }
+        }
+        document.querySelectorAll('.details-button').forEach(button => {
+            button.addEventListener('click', () => {
+                const serviceId = button.dataset.classId; // Получаем значение атрибута data-class-id
+                window.location.href = `/enrollment?serviceId=${serviceId}`; // Переходим на страницу записи с параметром classId
+            });
+        });
+    </script>
+</body>
+
+</html>

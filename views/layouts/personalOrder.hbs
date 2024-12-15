@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Мои заявки</title>
+    <style>
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-top: 20px;
+            font-size: 2.5rem;
+        }
+
+        .card-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 20px;
+            margin-top: 30px;
+        }
+
+        .card {
+            background-color: #fff;
+            border-radius: 10px;
+            box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            width: 300px;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0px 6px 20px rgba(0, 0, 0, 0.15);
+        }
+
+        .card h2 {
+            color: #007bff;
+            font-size: 1.5rem;
+            margin-bottom: 10px;
+        }
+
+        .card p {
+            color: #555;
+            font-size: 1rem;
+            margin: 5px 0;
+        }
+
+        .card .status {
+            color: #fff;
+            background-color: #28a745;
+            padding: 5px 10px;
+            border-radius: 5px;
+            display: inline-block;
+            margin-top: 15px;
+        }
+
+        .cancel-button {
+            color: #rgb(0, 0, 0);
+            background-color: #fff;
+            padding: 5px 10px;
+            border-radius: 5px;
+            display: inline-block;
+            margin-top: 15px;
+        }
+
+        .card .status.pending {
+            background-color: #ffc107;
+        }
+
+        .card .status.cancelled {
+            background-color: #dc3545;
+        }
+    </style>
+</head>
+
+<body>
+    {{> header}}
+    <h1>Мои заявки</h1>
+
+    <div class="card-container">
+        {{#each enrollments}}
+        <div class="card">
+            <h2>{{ServiceName}}</h2>
+            <p><strong>Тип:</strong> {{Name}}</p>
+            <p><strong>Специалист:</strong> {{MasterName}}</p>
+            <p><strong>Дата:</strong> {{Date}}</p>
+            <p><strong>Время:</strong> <span class="formatted-time">{{Time}}</span></p>
+            <p><strong>Продолжительность:</strong> {{Duration}} ч.</p>
+
+            <div class="status 
+                {{#if (eq Status 0)}}pending
+                {{else if (eq Status 1)}}approved
+                {{else if (eq Status 2)}}cancelled
+                {{/if}}">
+                {{#if (eq Status 0)}}На рассмотрении
+                {{else if (eq Status 1)}}Одобрено
+                {{else if (eq Status 2)}}Отклонено
+                {{/if}}
+            </div>
+
+            {{#if (eq Status 0)}}
+            <button class="cancel-button" data-enrollment-id="{{EnrollmentId}}">Отменить заявку</button>
+            {{/if}}
+        </div>
+        {{/each}}
+    </div>
+</body>
+
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const timeElements = document.querySelectorAll('.formatted-time');
+
+        timeElements.forEach(function (timeElement) {
+            const timeString = timeElement.textContent.trim();
+            const date = new Date(timeString);
+            const hours = date.getUTCHours().toString().padStart(2, '0'); // Часы (в формате 2 знаков)
+            const minutes = date.getUTCMinutes().toString().padStart(2, '0'); // Минуты (в формате 2 знаков)
+            const formattedTime = `${hours}:${minutes}`;
+            timeElement.textContent = formattedTime;
+        });
+
+        const cancelButtons = document.querySelectorAll('.cancel-button');
+
+        cancelButtons.forEach(function (button) {
+            button.addEventListener('click', function () {
+                const enrollmentId = button.getAttribute('data-enrollment-id');
+
+                const isConfirmed = confirm("Вы уверены, что хотите отклонить заявку? После этого её нельзя будет вернуть.");
+
+                if (!isConfirmed) {
+                    return; // Если пользователь не подтвердил, ничего не делаем
+                }
+
+                fetch(`/enrollment/cancel/${enrollmentId}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        status: 2, // Новый статус заявки: отклонено
+                    }),
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            button.closest('.card').querySelector('.status').classList.remove('pending');
+                            button.closest('.card').querySelector('.status').classList.add('cancelled');
+                            button.closest('.card').querySelector('.status').textContent = "Отклонено";
+                            button.style.display = 'none'; // Скрыть кнопку после отмены
+                        } else {
+                            alert('Ошибка при отмене заявки');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Ошибка при отправке запроса:', error);
+                        alert('Ошибка при отмене заявки');
+                    });
+            });
+        });
+    });
+
+</script>
+
+</html>

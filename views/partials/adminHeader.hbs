@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Admin Panel</title>
+    <style>
+        /* Стили для хедера */
+        header {
+            background-color: #333;
+            color: #fff;
+            padding: 20px 0;
+        }
+
+        /* Стили для навигации */
+        nav ul {
+            list-style-type: none;
+            padding: 0;
+            text-align: center;
+        }
+
+        nav ul li {
+            display: inline-block;
+            margin: 0 10px;
+        }
+
+        nav ul li a {
+            color: #fff;
+            text-decoration: none;
+            padding: 10px 15px;
+            border-radius: 5px;
+            transition: background-color 0.3s ease;
+        }
+
+        nav ul li a:hover {
+            background-color: #555;
+        }
+
+        /* Стили для текста в ссылках */
+        nav ul li a {
+            font-weight: bold; /* Жирный шрифт ывв*/
+            text-transform: uppercase; /* Преобразование текста в верхний регистр */
+            letter-spacing: 1px; /* Расстояние между символами */
+        }
+    </style>
+</head>
+
+<body>
+    <header>
+        <nav>
+            <ul>
+                <li><a href="/admin/masters">Специалисты</a></li>
+                <li><a href="/admin/types">Типы мероприятий</a></li>
+                <li><a href="/admin/scheduler">Расписание специяалистов</a></li> 
+                <li><a href="/admin/enrollment">Заявкм на услуги</a></li>
+                <li><a href="/admin/users">Пользователи</a></li>
+                <li><a href="/admin">Услуги</a></li>
+                <li><a href="/auth/logout">Выход</a></li>
+            </ul>
+        </nav>
+    </header>
+</body>
+
+</html>

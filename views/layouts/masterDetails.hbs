@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Детали мастера</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f0f0f0;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .master {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .master img {
+            max-width: 300px;
+            height: auto;
+            border-radius: 50%;
+            margin-bottom: 20px;
+            border: 5px solid #fff;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .master p {
+            margin: 10px 0;
+            font-size: 1.2em;
+            color: #555;
+        }
+
+        .gallery {
+            margin-top: 20px;
+            text-align: center;
+        }
+
+        .gallery h3 {
+            margin-bottom: 10px;
+            font-size: 1.5em;
+            color: #333;
+        }
+
+        .gallery img {
+            width: 200px;
+            height: 200px;
+            object-fit: cover;
+            border-radius: 8px;
+            margin: 5px;
+            box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .classes {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            justify-content: center;
+            margin-top: 20px;
+        }
+
+        .class {
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            width: 100%;
+            max-width: 350px;
+            text-align: center;
+        }
+
+        .class h4 {
+            margin-bottom: 10px;
+            font-size: 1.5em;
+            color: #333;
+        }
+
+        .details-button {
+            padding: 10px 20px;
+            background-color: #007BFF;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1em;
+        }
+
+        .details-button:hover {
+            background-color: #0056b3;
+        }
+
+        .no-content {
+            text-align: center;
+            margin: 20px 0;
+            font-size: 1.5em;
+            color: #555;
+        }
+    </style>
+</head>
+
+<body>
+    {{> header}}
+    <div class="container">
+        <div class="master">
+            <img src="data:image/jpeg;base64,{{master.Photo}}" alt="Фото мастера" />
+            <p>{{master.Name}}</p>
+            <p>{{master.Description}}</p>
+        </div>
+        <div class="gallery">
+            {{#if gallery.length}}
+            <h3>Примеры работ</h3>
+            {{#each gallery}}
+            <img src="data:image/jpeg;base64,{{Photo}}" alt="Пример работы мастера" />
+            {{/each}}
+            {{else}}
+            <p class="no-content">У мастера пока нет примеров работ</p>
+            {{/if}}
+        </div>
+    </div>
+    <div class="container">
+        {{#if classes.length}}
+        <div class="classes">
+            {{#each classes}}
+            <div class="class">
+                <h4>{{this.Name}}</h4>
+                <p>{{this.Description}}</p>
+                <button class="details-button" data-class-id="{{ClassId}}">Записаться!</button>
+            </div>
+            {{/each}}
+        </div>
+        {{else}}
+        <p class="no-content">У мастера пока нет мастер-классов</p>
+        {{/if}}
+    </div>
+    <script>
+        document.querySelectorAll('.details-button').forEach(button => {
+            button.addEventListener('click', () => {
+                const classId = button.dataset.classId;
+                window.location.href = `/enrollment?classId=${classId}`;
+            });
+        });
+    </script>
+</body>
+
+</html>

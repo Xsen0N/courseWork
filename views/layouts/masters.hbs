@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Просмотр мастеров</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f9f9f9;
+            margin: 0;
+            padding: 0;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 20px auto;
+            padding: 0 20px;
+        }
+
+        .filters {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .filters input[type="text"],
+        .filters input[type="checkbox"] {
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 1rem;
+            transition: border-color 0.3s;
+        }
+
+        .filters input[type="text"]:focus,
+        .filters input[type="checkbox"]:focus {
+            border-color: #007bff;
+            outline: none;
+        }
+
+        .filters label {
+            font-size: 1rem;
+            color: #555;
+        }
+
+        .master-cards {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .master-card {
+            background-color: #fff;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            border-radius: 10px;
+            padding: 20px;
+            width: calc(33.33% - 20px);
+            transition: transform 0.3s, box-shadow 0.3s;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .master-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15);
+        }
+
+        .master-card h2 {
+            margin-top: 0;
+            font-size: 1.2rem;
+            color: #007bff;
+        }
+
+        .master-card p {
+            margin: 10px 0;
+            color: #666;
+            font-size: 1rem;
+        }
+
+        .master-card a {
+            display: inline-block;
+            margin-top: 15px;
+            text-decoration: none;
+            color: #007bff;
+            font-weight: bold;
+            transition: color 0.3s;
+        }
+
+        .master-card a:hover {
+            color: #0056b3;
+            text-decoration: underline;
+        }
+
+        .master-card span {
+            display: block;
+            margin-top: 10px;
+            font-size: 0.9rem;
+            color: #888;
+        }
+
+        /* Адаптивность */
+        @media (max-width: 992px) {
+            .master-card {
+                width: calc(50% - 20px);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .master-card {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    {{> header}}
+  <div class="container">
+        <div class="filters">
+            <input type="text" id="searchInput" placeholder="Поиск...">
+            <input type="checkbox" id="descriptionFilter">
+            <label for="descriptionFilter">С описанием</label>
+        </div>
+
+        <div id="masters-list" class="master-cards">
+            {{#each masters}}
+            <div class="master-card" data-name="{{Name}}" data-description="{{Description}}"
+                data-works-count="{{worksCountsMap.[this.MasterId]}}">
+                {{> master}}
+                <a href="/masters/{{this.MasterId}}">Посмотреть детали</a>
+                <span>{{this.class.ArtType}}</span>
+            </div>
+            {{/each}}
+        </div>
+    </div>
+
+    <script>
+        // Функция для поиска мастеров по имени или описанию
+        document.getElementById('searchInput').addEventListener('input', function () {
+            var searchText = this.value.toLowerCase();
+            var masterCards = document.querySelectorAll('.master-card');
+            masterCards.forEach(function (card) {
+                var name = card.dataset.name.toLowerCase();
+                if (name.includes(searchText)) {
+                    card.style.display = 'block';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+        });
+
+        // Функция для фильтрации мастеров по наличию описания
+        document.getElementById('descriptionFilter').addEventListener('change', function () {
+            var isChecked = this.checked;
+            var masterCards = document.querySelectorAll('.master-card');
+            masterCards.forEach(function (card) {
+                var description = card.dataset.description;
+                if (isChecked && description.trim() !== '') {
+                    card.style.display = 'block';
+                } else if (!isChecked) {
+                    card.style.display = 'block';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+        });
+
+        // Функция для фильтрации мастеров по наличию примеров работ
+        document.getElementById('worksFilter').addEventListener('change', function () {
+            var isChecked = this.checked;
+            var masterCards = document.querySelectorAll('.master-card');
+            masterCards.forEach(function (card) {
+                var worksCount = parseInt(card.dataset.worksCount);
+                if (isChecked) {
+                    if (worksCount > 0) {
+                        card.style.display = 'block';
+                    } else {
+                        card.style.display = 'none';
+                    }
+                } else {
+                    card.style.display = 'block';
+                }
+            });
+        });
+    </script>
+</body>
+
+</html>

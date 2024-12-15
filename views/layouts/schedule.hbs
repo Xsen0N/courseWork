@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Курсы</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f5f5f5;
+            margin: 0;
+            padding: 0;
+        }
+
+        .admin-header {
+            background-color: #333;
+            color: #fff;
+            padding: 20px 0;
+            text-align: center;
+        }
+
+        #scheduler-container {
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 10px;
+            box-shadow: 0px 0px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            color: #333;
+            text-align: center;
+        }
+
+        #status-select {
+            margin-bottom: 20px;
+            padding: 10px;
+            font-size: 16px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            background-color: #fff;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        .scheduler-card {
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            padding: 10px;
+            margin-bottom: 10px;
+            background-color: #f9f9f9;
+        }
+
+        .scheduler-card h2 {
+            margin-top: 0;
+            color: #333;
+            font-size: 18px;
+        }
+
+        .scheduler-card p {
+            margin: 5px 0;
+            color: #666;
+        }
+
+        .scheduler-card button {
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .scheduler-card button:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+
+<body>
+    {{> adminHeader}}
+    <div id="scheduler-container">
+        <h1>Страница с расписаниями</h1>
+
+        <select id="status-select">
+            <option value="all">Все</option>
+            <option value="0">Одобрено</option>
+            <option value="1">Отклонено</option>
+            <option value="2">Рассмотрение</option>
+        </select>
+
+        {{#each schedule}}
+        <div class="scheduler-card" data-status="{{this.Status}}" data-schedule-id="{{this.SchedulerId}}">
+            <h2>{{this.SchedulerId}}</h2>
+            <p>TotalSpots: {{this.TotalSpots}}</p>
+            <p>AvailableSpots: {{this.AvailableSpots}}</p>
+            <p>DateClass: {{this.DateClass}}</p>
+            <p>Status: {{this.Status}}</p>
+            <p>Id мастер-класса: {{this.ClassId}}</p>
+            <p>Название мастер-класса: {{this.ClassName}}</p>
+            {{#if (eq this.Status 2)}}
+            <button onclick="changeStatus('{{this.SchedulerId}}', 0)">Одобрить</button>
+            <button onclick="changeStatus('{{this.SchedulerId}}', 1)">Отклонить</button>
+            {{/if}}
+            {{#if (eq this.Status 0)}}
+            <button onclick="changeStatus('{{this.SchedulerId}}', 1)">Отклонить</button>
+            {{/if}}
+            {{#if (eq this.Status 1)}}
+            <button onclick="changeStatus('{{this.SchedulerId}}', 0)">Одобрить</button>
+            {{/if}}
+
+        </div>
+        {{/each}}
+    </div>
+
+    <script>
+        const statusSelect = document.getElementById('status-select');
+        const schedulerCards = document.querySelectorAll('.scheduler-card');
+
+        statusSelect.addEventListener('change', function () {
+            const selectedStatus = statusSelect.value;
+
+            schedulerCards.forEach(card => {
+                const cardStatus = card.dataset.status;
+                if (selectedStatus === 'all' || cardStatus === selectedStatus) {
+                    card.style.display = 'block';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+        });
+
+        function changeStatus(scheduleId, action) {
+            fetch(`/admin/updateSchedule/${scheduleId}/${action}`, {
+                method: 'PUT'
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        location.reload();
+                    } else {
+                        alert('Ошибка при изменении статуса расписания.');
+                    }
+                });
+        }
+    </script>
+
+</body>
+
+</html>

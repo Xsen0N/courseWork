@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Login Form</title>
+        <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f5f5f5;
+            margin: 0;
+            padding: 0;
+        }
+
+        .admin-header {
+            background-color: #333;
+            color: #fff;
+            padding: 20px 0;
+            text-align: center;
+        }
+
+        #add-type-button {
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-bottom: 20px;
+            transition: background-color 0.3s;
+        }
+
+        #add-type-button:hover {
+            background-color: #0056b3;
+        }
+
+        .types {
+            background-color: #fff;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .types h2 {
+            color: #333;
+            margin-top: 0;
+        }
+
+        .types p {
+            color: #666;
+            margin: 5px 0;
+        }
+
+        .details-button,
+        .delete-button {
+            background-color: #4ad4d6;
+            color: #fff;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-right: 10px;
+            transition: background-color 0.3s;
+        }
+
+        .details-button:hover,
+        .delete-button:hover {
+            background-color: #c82333;
+        }
+    </style>
+</head>
+
+<body>
+    {{> adminHeader}}
+    <button id="add-type-button">Добавить новый курс</button>
+    {{#each types}}
+    <div class="types">
+        <h2>{{TypeName}}</h2>
+        <p>ID:  {{TypeId}}</p>
+        <p>{{Description}}</p>
+        <button class="details-button" data-type-id="{{this.TypeId}}">Изменить</button>
+        <button class="delete-button" data-type-id="{{this.TypeId}}">Удалить</button>
+    </div>
+    {{/each}}
+
+    <script>
+        document.getElementById('add-type-button').addEventListener('click', () => {
+            window.location.href = '/admin/addType'; 
+        });
+
+        document.querySelectorAll('.details-button').forEach(button => {
+            button.addEventListener('click', () => {
+                const typeId = button.dataset.typeId;
+                window.location.href = `/admin/editType/${typeId}`; 
+            });
+        });
+
+        document.querySelectorAll('.delete-button').forEach(button => {
+            button.addEventListener('click', async () => {
+                
+                const typeId = button.dataset.typeId;
+                try {
+                     if (confirm('Вы уверены, что хотите удалить этот тип?')) {
+                    const response = await fetch(`/admin/deleteType/${typeId}`, {
+                        method: 'DELETE'
+                    });
+                    if (response.ok) {
+                        window.location.reload();
+                    } else {
+                        console.error('Ошибка при удалении типа');
+                    }
+                     }
+                } catch (error) {
+                    console.error('Ошибка при удалении типа:', error);
+                }
+            });
+        });
+    </script>
+
+</body>

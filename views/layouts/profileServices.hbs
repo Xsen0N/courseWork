@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Мои услуги</title>
+    <style>
+        /* Common styles */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f0f0f0;
+        }
+
+        h1 {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        /* Container styles */
+        .container {
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 10px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Service card styles */
+        .service-card {
+            border: 1px solid #ccc;
+            padding: 10px;
+            margin: 10px 0;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+            cursor: pointer;
+        }
+
+        .service-card:hover {
+            background-color: #f0f0f0;
+        }
+
+        .service-card h2 {
+            margin: 0;
+        }
+
+        .service-card p {
+            margin: 5px 0;
+        }
+
+        .service-card button {
+            margin-top: 10px;
+            padding: 10px;
+            background-color: #007BFF;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .service-card button:hover {
+            background-color: #0056b3;
+        }
+
+        /* Form styles */
+        form {
+            margin: 20px 0;
+            padding: 10px;
+            background-color: #fff;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+        }
+
+        form h2 {
+            margin: 0 0 10px 0;
+        }
+
+        form input[type="text"],
+        form textarea,
+        form select {
+            width: 100%;
+            padding: 8px;
+            margin: 5px 0;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+        }
+
+        form button {
+            padding: 10px 15px;
+            background-color: #007BFF;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        form button:hover {
+            background-color: #0056b3;
+        }
+
+        form .cancel-button {
+            background-color: #dc3545;
+        }
+
+        form .cancel-button:hover {
+            background-color: #c82333;
+        }
+
+        /* Location field styles */
+        #otherLocation {
+            display: none;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Мои услуги</h1>
+
+    {{> masterHeader}}
+
+    <div class="container">
+
+        <!-- Form for adding a new service -->
+        <form id="addServiceForm" action="/profile/addService" method="post">
+            <h2>Добавить новую услугу</h2>
+            <input type="text" name="name" id="name" placeholder="Название" required>
+            <select name="type" id="type" required>
+                <option value="" disabled selected>Выберите тип</option>
+                {{#each types}}
+                <option value="{{this.TypeId}}">{{this.TypeName}}</option>
+                {{/each}}
+            </select>
+            <textarea name="description" id="description" placeholder="Описание" maxlength="200"></textarea>
+
+            <!-- Поле для выбора локации -->
+            <select name="location" id="location" required onchange="toggleOtherLocationField()">
+                <option value="" disabled selected>Выберите локацию</option>
+                <option value="Минск">Минск</option>
+                <option value="Витебск">Витебск</option>
+                <option value="Гомель">Гомель</option>
+                <option value="Гродно">Гродно</option>
+                <option value="Могилев">Могилев</option>
+                <option value="Брест">Брест</option>
+                <option value="Иное">Иное</option>
+            </select>
+
+            <!-- Поле для ввода другой локации -->
+            <input type="text" id="otherLocation" name="otherLocation" placeholder="Укажите другую локацию"
+                maxlength="100" style="display: none;">
+
+
+            <button type="submit">Добавить</button>
+        </form>
+
+        <!-- Список услуг -->
+        <div id="servicesList">
+            <h2>Список моих услуг</h2>
+            {{#each services}}
+            <div class="service-card" data-class-id="{{this.ServiceId}}">
+                <h2>{{this.Name}}</h2>
+                <p>{{this.Description}}</p>
+                <p><strong>Тип:</strong> {{this.TypeName}}</p>
+                <p><strong>Локация:</strong> {{this.Location}}</p>
+
+                <button onclick="deleteService('{{this.ServiceId}}')">Удалить</button>
+            </div>
+            {{/each}}
+        </div>
+    </div>
+
+    <!-- Form for editing an existing service -->
+    <form id="editServiceForm" action="/profile/editService" method="post" style="display: none;">
+        <h2>Редактировать услугу</h2>
+        <input type="hidden" name="serviceId" id="editServiceId">
+        <input type="text" name="name" id="editServiceName" placeholder="Название" required>
+        <select name="type" id="editServiceArtType" required>
+            <option value="" disabled>Выберите тип</option>
+            {{#each types}}
+            <option value="{{this.TypeId}}">{{this.TypeName}}</option>
+            {{/each}}
+        </select>
+        <textarea name="description" id="editServiceDescription" placeholder="Описание"></textarea>
+        <select name="location" id="editLocation" required onchange="toggleOtherLocationFieldEdit()">
+            <option value="" disabled selected>Выберите локацию</option>
+            <option value="Минск">Минск</option>
+            <option value="Витебск">Витебск</option>
+            <option value="Гомель">Гомель</option>
+            <option value="Гродно">Гродно</option>
+            <option value="Могилев">Могилев</option>
+            <option value="Брест">Брест</option>
+            <option value="Иное">Иное</option>
+        </select>
+
+        <input type="text" id="editOtherLocation" name="otherLocation" placeholder="Укажите другую локацию"
+            maxlength="100" style="display: none;">
+
+        <button type="submit">Сохранить изменения</button>
+        <button type="button" class="cancel-button" onclick="cancelEdit()">Отмена</button>
+    </form>
+    </div>
+
+
+    <script>
+        document.getElementById('addServiceForm').addEventListener('submit', function (event) {
+            const locationSelect = document.getElementById('location');
+            const otherLocationInput = document.getElementById('otherLocation');
+            if (locationSelect.value === 'Иное' && otherLocationInput.value.trim() !== '') {
+                locationSelect.value = otherLocationInput.value.trim();
+            }
+        });
+
+        document.getElementById('editServiceForm').addEventListener('submit', function (event) {
+            const locationSelect = document.getElementById('editLocation');
+            const otherLocationInput = document.getElementById('editOtherLocation');
+            if (locationSelect.value === 'Иное' && otherLocationInput.value.trim() !== '') {
+                locationSelect.value = otherLocationInput.value.trim();
+            }
+        });
+
+        function toggleOtherLocationField() {
+            const locationSelect = document.getElementById('location');
+            const otherLocationField = document.getElementById('otherLocation');
+            otherLocationField.style.display = locationSelect.value === 'Иное' ? 'block' : 'none';
+        }
+
+        function toggleOtherLocationFieldEdit() {
+            const locationSelect = document.getElementById('editLocation');
+            const otherLocationField = document.getElementById('editOtherLocation');
+            otherLocationField.style.display = locationSelect.value === 'Иное' ? 'block' : 'none';
+        }
+
+
+        // Function to cancel the editing process
+        function cancelEdit() {
+            document.getElementById('editServiceForm').style.display = 'none';
+        }
+
+        // Handling click on a service card for editing
+        document.querySelectorAll('.service-card').forEach(card => {
+            card.addEventListener('click', function () {
+                const serviceId = this.getAttribute('data-class-id');
+                fetch(`/profile/getService/${serviceId}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        document.getElementById('editServiceId').value = data.ServiceId;
+                        document.getElementById('editServiceName').value = data.Name;
+                        document.getElementById('editServiceArtType').value = data.TypeId;
+                        document.getElementById('editLocation').value = data.Location;
+                        document.getElementById('editServiceDescription').value = data.Description;
+
+                        const locationSelect = document.getElementById('editLocation');
+                        locationSelect.value = data.Location;
+                        toggleOtherLocationFieldEdit(); // Update visibility of the "other location" field
+
+                        document.getElementById('editServiceForm').style.display = 'block';
+                        window.scrollTo(0, document.getElementById('editServiceForm').offsetTop);
+                    })
+                    .catch(error => console.error('Ошибка при загрузке данных класса:', error));
+            });
+        });
+
+        // Function to delete a service
+        function deleteService(serviceId) {
+            if (confirm('Вы уверены, что хотите удалить этот класс?')) {
+                fetch(`/profile/deleteService/${serviceId}`, {
+                    method: 'DELETE'
+                })
+                    .then(response => {
+                        if (response.ok) {
+                            location.reload();
+                        } else {
+                            throw new Error('Ошибка удаления класса');
+                        }
+                    })
+                    .catch(error => console.error('Ошибка удаления класса:', error));
+            }
+        }
+    </script>
+</body>
+
+</html>

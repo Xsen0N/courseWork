@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Записи на курсы</title>
+    <!-- Подключаем стили, если необходимо -->
+    <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f2f2f2;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            margin-top: 0;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        table th,
+        table td {
+            padding: 10px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+
+        table th {
+            background-color: #f2f2f2;
+            cursor: pointer;
+        }
+
+        table th:hover {
+            background-color: #e2e2e2;
+        }
+
+        table tbody tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+
+        table tbody tr:hover {
+            background-color: #e9e9e9;
+        }
+    </style>
+ {{> adminHeader}}
+
+    <div class="container">
+
+        <h1>Записи на курсы</h1>
+        {{#if enrollment.length}}
+        <table id="enrollment-table">
+            <thead>
+                <tr>
+                    <th data-sort-by="EnrollmentId">Идентификатор записи</th>
+                    <th data-sort-by="SpotsCount">Количество мест</th>
+                    <th data-sort-by="SchedulerId">Идентификатор расписания</th>
+                    <th data-sort-by="UserId">Идентификатор пользователя</th>
+                </tr>
+            </thead>
+            <tbody>
+                {{#each enrollment}}
+                <tr>
+                    <td>{{this.EnrollmentId}}</td>
+                    <td>{{this.SpotsCount}}</td>
+                    <td>{{this.SchedulerId}}</td>
+                    <td>{{this.UserId}}</td>
+                </tr>
+                {{/each}}
+            </tbody>
+        </table>
+        {{else}}
+        <p>Нет записей на курсы</p>
+        {{/if}}
+    </div>
+
+    <!-- Подключаем скрипты, если необходимо -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const table = document.getElementById('enrollment-table');
+            if (table) {
+                const headers = table.querySelectorAll('th[data-sort-by]');
+                headers.forEach(header => {
+                    header.addEventListener('click', () => {
+                        const sortBy = header.getAttribute('data-sort-by');
+                        const rows = Array.from(table.querySelectorAll('tbody tr'));
+                        const sortedRows = rows.sort((a, b) => {
+                            const aValue = a.querySelector(`td:nth-child(${header.cellIndex + 1})`).textContent;
+                            const bValue = b.querySelector(`td:nth-child(${header.cellIndex + 1})`).textContent;
+                            return aValue.localeCompare(bValue, undefined, { numeric: true, sensitivity: 'base' });
+                        });
+                        table.querySelector('tbody').innerHTML = '';
+                        sortedRows.forEach(row => table.querySelector('tbody').appendChild(row));
+                    });
+                });
+            }
+        });
+    </script>
+</body>
+
+</html>

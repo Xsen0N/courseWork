@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Курсы</title>
+    <style>
+        /* Стили для карточек курсов */
+        .course-card {
+            border: 1px solid #ccc;
+            padding: 10px;
+            margin: 10px;
+        }
+                .delete-button {
+            background-color: #f1354e;
+            color: #fff;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            text-decoration: none;
+            transition: background-color 0.3s;
+        }
+                .delete-button:hover {
+            background-color: #b3001e;
+        }
+    </style>
+</head>
+
+<body>
+    {{> adminHeader}}
+    <div id="course-container">
+
+        {{#each users}}
+        <div class="course-card">
+            <h2>{{this.Login}}</h2>
+            <p>ID: {{this.ID}}</p>
+            <p>Email: {{this.Email}}</p>
+       
+        <div class="button-container">
+            <button class="delete-button" data-user-id="{{this.ID}}">Удалить</button>
+
+        </div> 
+        </div>
+        {{/each}}
+    </div>
+
+    <script>
+document.querySelectorAll('.delete-button').forEach(button => {
+            button.addEventListener('click', async () => {
+
+                const userId = button.dataset.userId;
+                try {
+                    if (confirm('Вы уверены, что хотите удалить этого пользоватя?')) {
+                        const response = await fetch(`/admin/deleteUser/${userId}`, {
+                            method: 'DELETE'
+                        });
+                        if (response.ok) {
+                            window.location.reload();
+                        } else {
+                            console.error('Ошибка при удалении пользователя');
+                        }
+                    }
+                } catch (error) {
+                    console.error('Ошибка при удалении пользователя:', error);
+                }
+            });
+        });
+    </script>
+
+</body>
+
+</html>
