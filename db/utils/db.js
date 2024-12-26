@@ -21,7 +21,7 @@ const models = initModels(connection);
 
 module.exports = { models, connection };
 
-connection.sync({ alter: false  }) // Use { force: true } to drop existing tables and re-create them , force: true
+connection.sync({ alter: false }) // Use { force: true } to drop existing tables and re-create them , force: true
   .then(() => {
     console.log('Database synchronized successfully.');
   })

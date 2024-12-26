@@ -7,7 +7,7 @@ class ServiceController {
             include: [
                 {
                     model: models.masters,
-                    attributes: ['Name'], // Указываем, что нам нужно только имя преподавателя
+                    attributes: ['Name', 'PriceForHour'], // Указываем, что нам нужно только имя преподавателя
                     required: true // Если преподаватель не указан, классы без преподавателя не будут возвращены
                 },
                 {
@@ -23,6 +23,7 @@ class ServiceController {
             Location: courseDetail.Location, 
             Description: courseDetail.Description,
             Master: courseDetail['Master.Name'],
+            PriceForHour: courseDetail['Master.PriceForHour'],
             TypeName: courseDetail['Type.TypeName'],
 
         }));

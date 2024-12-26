@@ -116,6 +116,23 @@
             font-weight: bold;
             color: #333;
         }
+        input[type="text"] {
+    width: 100%;
+    padding: 12px;
+    margin-bottom: 20px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    box-sizing: border-box;
+    font-size: 1rem;
+    background-color: #f9f9f9;
+    transition: border-color 0.3s, box-shadow 0.3s;
+}
+
+input[type="text"]:focus {
+    border-color: #007bff;
+    box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
+}
+
 
         .info {
             text-align: center;
@@ -146,17 +163,18 @@
         <p>Тип: {{services.TypeName}}</p>
         <p>Специалист: {{services.Master}}</p>
         <p>Город: {{services.Location}}</p>
+        <p><strong>Цена за час:</strong> {{services.PriceForHour}} BYN</p>
     </div>
     {{/if}}
 
     <form action="/enrollment/addEnrollment" method="POST">
-        <input type="hidden" name="ServiceId" value="{{services.ServiceId}}"> 
-        <input type="hidden" name="UserId" value="{{userId}}"> 
-        <input type="hidden" name="Location" value="{{services.Location}}"> 
+        <input type="hidden" name="ServiceId" value="{{services.ServiceId}}">
+        <input type="hidden" name="UserId" value="{{userId}}">
+        <input type="hidden" name="Location" value="{{services.Location}}">
 
         <label for="date">Дата занятия:</label>
         <input type="date" id="date" name="Date" required>
-        
+
         <label for="time">Время начала:</label>
         <select id="time" name="Time" required>
         </select>
@@ -164,52 +182,55 @@
         <label for="duration">Продолжительность (в часах):</label>
         <input type="number" id="duration" name="Duration" required min="1" max="48">
 
+        <label for="address">Адрес:</label>
+        <input type="text" id="address" name="Address" required>
+
         <button type="submit">Отправить заявку</button>
     </form>
 
     <script>
-document.addEventListener('DOMContentLoaded', function () {
-    // Вычисляем завтрашний день
-    const tomorrow = new Date();
-    tomorrow.setDate(tomorrow.getDate() + 1); // Завтрашний день
-    const tomorrowDate = tomorrow.toISOString().split('T')[0]; // Формат YYYY-MM-DD
-    
-    // Ограничиваем максимальную дату до 31 декабря 2099 года
-    const maxDate = "2099-12-31";
-    
-    const dateInput = document.getElementById('date');
-    
-    dateInput.setAttribute('min', tomorrowDate); 
-    dateInput.setAttribute('max', maxDate); 
-    dateInput.addEventListener('change', function () {
-        const selectedDate = new Date(dateInput.value);
-        if (selectedDate < tomorrow) {
-            dateInput.value = tomorrowDate;
-        }
-    });
+        document.addEventListener('DOMContentLoaded', function () {
+            // Вычисляем завтрашний день
+            const tomorrow = new Date();
+            tomorrow.setDate(tomorrow.getDate() + 1); // Завтрашний день
+            const tomorrowDate = tomorrow.toISOString().split('T')[0]; // Формат YYYY-MM-DD
 
-    const timeSelect = document.getElementById('time');
+            // Ограничиваем максимальную дату до 31 декабря 2099 года
+            const maxDate = "2099-12-31";
 
-    for (let h = 0; h < 24; h++) {
-        for (let m = 0; m < 60; m += 10) {
-            const hours = h < 10 ? '0' + h : h;
-            const minutes = m < 10 ? '0' + m : m;
-            const timeOption = document.createElement('option');
-            timeOption.value = `${hours}:${minutes}`;
-            timeOption.textContent = `${hours}:${minutes}`;
-            timeSelect.appendChild(timeOption);
-        }
-    }
-});
+            const dateInput = document.getElementById('date');
 
-    document.getElementById('duration').addEventListener('input', function () {
-        let value = parseInt(this.value);
-        if (value < 1) {
-            this.value = 1;  // Минимум 1
-        } else if (value > 48) {
-            this.value = 48;  // Максимум 48
-        }
-    });
+            dateInput.setAttribute('min', tomorrowDate);
+            dateInput.setAttribute('max', maxDate);
+            dateInput.addEventListener('change', function () {
+                const selectedDate = new Date(dateInput.value);
+                if (selectedDate < tomorrow) {
+                    dateInput.value = tomorrowDate;
+                }
+            });
+
+            const timeSelect = document.getElementById('time');
+
+            for (let h = 0; h < 24; h++) {
+                for (let m = 0; m < 60; m += 10) {
+                    const hours = h < 10 ? '0' + h : h;
+                    const minutes = m < 10 ? '0' + m : m;
+                    const timeOption = document.createElement('option');
+                    timeOption.value = `${hours}:${minutes}`;
+                    timeOption.textContent = `${hours}:${minutes}`;
+                    timeSelect.appendChild(timeOption);
+                }
+            }
+        });
+
+        document.getElementById('duration').addEventListener('input', function () {
+            let value = parseInt(this.value);
+            if (value < 1) {
+                this.value = 1;  // Минимум 1
+            } else if (value > 48) {
+                this.value = 48;  // Максимум 48
+            }
+        });
     </script>
 </body>
 

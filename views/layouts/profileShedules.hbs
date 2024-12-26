@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Расписание</title>
+    <!-- Подключение FullCalendar CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.css" rel="stylesheet">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f9f9f9;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+            display: flex;
+            gap: 30px;
+        }
+
+        .calendar {
+            flex: 1;
+            max-width: 400px;
+            padding: 10px;
+            background: #fff;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .schedule {
+            flex: 2;
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 30px;
+        }
+
+        .row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 30px;
+            justify-content: center;
+        }
+
+        .card {
+            background: #fff;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            width: 400px;
+            transition: box-shadow 0.3s ease;
+        }
+
+        .card.highlighted {
+            box-shadow: 0 0 10px rgba(231, 76, 60, 0.8); /* Подсветка карточки */
+        }
+
+        .card-body {
+            padding: 20px;
+        }
+
+        .card-title {
+            font-size: 1.6em;
+            color: #2c3e50;
+            margin-bottom: 10px;
+        }
+
+        .card-text {
+            font-size: 1.2em;
+            color: #555;
+            line-height: 1.6;
+        }
+
+        .card-text strong {
+            color: #333;
+        }
+
+        .status {
+            margin-top: 10px;
+            font-weight: bold;
+            color: #fff;
+            padding: 5px 10px;
+            border-radius: 5px;
+            display: inline-block;
+        }
+
+        .status.active {
+            background-color: #4caf50;
+        }
+
+        .status.inactive {
+            background-color: #e74c3c;
+        }
+
+        /* Стили для календаря */
+        .fc-header-toolbar {
+            padding: 10px;
+            margin-bottom: 10px;
+        }
+
+        .fc-daygrid-event {
+            font-size: 0.9em;
+            padding: 2px 5px;
+        }
+    </style>
+</head>
+
+<body>
+    {{> masterHeader}}
+    <div class="container">
+        <!-- Календарь -->
+        <div class="calendar">
+            <div id="calendar"></div>
+        </div>
+
+        <!-- Расписание -->
+        <div class="schedule">
+            <h1 class="my-4">Мое расписание</h1>
+            <div class="row">
+                {{#each shedulesDetailes}}
+                <div class="col-md-4" id="card-{{@index}}">
+                    <div class="card">
+                        <div class="card-body">
+                            <h5 class="card-title">{{this.Name}}</h5>
+                            <p class="card-text">
+                                <strong>Дата:</strong> <span class="formatted-date">{{this.Enrollment.Date}}</span><br>
+                                <strong>Время:</strong> <span class="formatted-time">{{this.Enrollment.Time}}</span><br>
+                                <strong>Продолжительность:</strong> {{this.Enrollment.Duration}} час(ов)<br>
+                                <strong>Адрес:</strong> {{this.Enrollment.Address}}<br>
+                                <strong>Логин пользователя:</strong> {{this.User.Login}}<br>
+                                <strong>Почта для связи:</strong> {{this.User.Email}}<br>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                {{/each}}
+            </div>
+        </div>
+    </div>
+
+    <!-- Подключение FullCalendar JS -->
+    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.js"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            // Форматирование времени
+            const timeElements = document.querySelectorAll('.formatted-time');
+            timeElements.forEach(function (timeElement) {
+                const timeString = timeElement.textContent.trim(); // Получаем строку времени
+                const date = new Date(timeString); // Создаем объект Date
+                if (!isNaN(date)) {
+                    const hours = date.getUTCHours().toString().padStart(2, '0'); // Часы
+                    const minutes = date.getUTCMinutes().toString().padStart(2, '0'); // Минуты
+                    timeElement.textContent = `${hours}:${minutes}`; // Форматируем время
+                } else {
+                    timeElement.textContent = "Неверное время"; // Обработка ошибки
+                }
+            });
+
+            // Форматирование даты (если нужно)
+            const dateElements = document.querySelectorAll('.formatted-date');
+            dateElements.forEach(function (dateElement) {
+                const dateString = dateElement.textContent.trim(); // Получаем строку даты
+                const date = new Date(dateString); // Создаем объект Date
+                if (!isNaN(date)) {
+                    const day = date.getUTCDate().toString().padStart(2, '0'); // День
+                    const month = (date.getUTCMonth() + 1).toString().padStart(2, '0'); // Месяц
+                    const year = date.getUTCFullYear(); // Год
+                    dateElement.textContent = `${day}.${month}.${year}`; // Форматируем дату
+                } else {
+                    dateElement.textContent = "Неверная дата"; // Обработка ошибки
+                }
+            });
+
+            // Инициализация календаря
+            const calendarEl = document.getElementById('calendar');
+            const calendar = new FullCalendar.Calendar(calendarEl, {
+                initialView: 'dayGridMonth',
+                locale: 'ru', // Локализация на русский
+                headerToolbar: {
+                    left: 'prev,next today',
+                    center: 'title',
+                    right: 'dayGridMonth,timeGridWeek,timeGridDay'
+                },
+                events: [
+                    {{#each shedulesDetailes}}
+                    {
+                        title: '*',
+                        start: '{{this.Enrollment.Date}}',
+                        color: '#e74c3c', // Красный цвет для занятых дат
+                        allDay: true,
+                        extendedProps: {
+                            cardId: 'card-{{@index}}' // Связываем событие с карточкой
+                        }
+                    },
+                    {{/each}}
+                ],
+                eventContent: function (arg) {
+                    return { html: `<div class="fc-event-time">${arg.event.title}</div>` };
+                },
+                eventClick: function (info) {
+                    document.querySelectorAll('.card').forEach(card => {
+                        card.classList.remove('highlighted');
+                    });
+                    const cardId = info.event.extendedProps.cardId;
+                    const card = document.getElementById(cardId).querySelector('.card');
+                    card.classList.add('highlighted');
+                    // Прокручиваем страницу к карточке
+                    card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+            });
+            calendar.render();
+        });
+    </script>
+</body>
+
+</html>

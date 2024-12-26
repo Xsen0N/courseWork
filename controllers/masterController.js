@@ -11,8 +11,6 @@ class MastersController {
                     master.PhotoType = 'image/jpeg'; // или 'image/png', если нужно
                 }
             }
-    
-    
             const worksCounts = await models.gallery.findAll({
                 attributes: ['MasterId', [connection.fn('COUNT', connection.col('GalleryId')), 'worksCount']],
                 group: ['MasterId'],
@@ -20,7 +18,6 @@ class MastersController {
             });
             
             console.log(worksCounts)
-            // Создание объекта для быстрого доступа к количеству работ по MasterId
             const worksCountsMap = worksCounts.reduce((acc, curr) => {
                 acc[curr.MasterId] = curr.worksCount;
                 return acc;
@@ -33,11 +30,7 @@ class MastersController {
         }
     }
     
-    
-
-
     async getOneMaster(req, res) {
-        //const { id } = req.params;
         const masterId = req.params.id;
         try {
             const master = await models.masters.findByPk(masterId, { raw: true });
@@ -55,6 +48,7 @@ class MastersController {
                 },
                 raw: true
             });
+            console.log("Информация о услугах"+classes)
             const gallery = await models.gallery.findAll({
                 where: {
                     MasterId: masterId
@@ -91,6 +85,7 @@ class MastersController {
         }
     }
 
+    ///???
     async updateMaster(req, res) {
         const { id } = req.params;
         const { name, photo, artType, description } = req.body;
@@ -111,6 +106,8 @@ class MastersController {
             res.status(500).send('Произошла ошибка при обновлении мастера');
         }
     }
+
+        ///???
 
     async deleteMaster(req, res) {
         const { id } = req.params;

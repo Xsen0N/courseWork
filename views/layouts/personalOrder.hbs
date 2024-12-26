@@ -102,6 +102,10 @@
             {{#if (eq Status 0)}}
             <button class="cancel-button" data-enrollment-id="{{EnrollmentId}}">Отменить заявку</button>
             {{/if}}
+                            {{#if Comments}}
+                    <p><strong>Комментрий от специалиста:</strong> {{Comments}}</p>
+                {{/if}}
+
         </div>
         {{/each}}
     </div>

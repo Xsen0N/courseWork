@@ -1,6 +1,6 @@
 const { raw } = require('body-parser');
 const { models } = require('../db/utils/db');
-const { Op } = require('sequelize');
+const { Op, where } = require('sequelize');
 
 class ProfileController {
     async getPage(req, res) {
@@ -108,7 +108,7 @@ class ProfileController {
             if (!req.session.masterId) {
                 return res.status(403).send('Необходима регистрация');
             }
-            const { name, description } = req.body;
+            const { name, description, price } = req.body;
             const master = await models.masters.findByPk(req.session.masterId);
 
             if (!master) {
@@ -121,7 +121,8 @@ class ProfileController {
 
             await models.masters.update({
                 Name: name,
-                Description: description
+                Description: description,
+                PriceForHour: price
             },
                 {
                     where: { MasterId: req.session.masterId }
@@ -143,7 +144,8 @@ class ProfileController {
             const master = await models.masters.findByPk(req.session.masterId);
 
             if (!master) {
-                return res.status(404).send('Мастер не найден');
+                req.session.previousUrl = req.headers.referer;
+                return res.render('./layouts/error.hbs', {layout: "error.hbs", errorMessage: 'Мастер не найден' });
             }
             const servicesDetailes = await models.services.findAll({
 
@@ -183,7 +185,6 @@ class ProfileController {
     async addService(req, res) {
         try {
             const { name, type, description, location, otherLocation } = req.body;
-            console.log(req.body);
             if (!req.session.masterId) {
                 return res.status(403).send('Необходима регистрация');
             }
@@ -227,7 +228,6 @@ class ProfileController {
             if (!master) {
                 return res.status(404).send('Мастер не найден');
             }
-            console.log('id ' + serviceId + 'n' + name)
             await models.services.update({
                 Name: name,
                 TypeId: type,
@@ -343,180 +343,194 @@ class ProfileController {
     }
 
 
-    async addSchedule(req, res) {
-        try {
-            const { ClassId, DateClass, TotalSpots, AvailableSpots } = req.body;
+    // async addSchedule(req, res) {
+    //     try {
+    //         const { ClassId, DateClass, TotalSpots, AvailableSpots } = req.body;
 
-            const selectedClass = await models.services.findOne({
-                where: {
-                    ClassId: ClassId,
-                    MasterId: req.session.masterId
-                }
-            });
+    //         const selectedClass = await models.services.findOne({
+    //             where: {
+    //                 ClassId: ClassId,
+    //                 MasterId: req.session.masterId
+    //             }
+    //         });
 
-            if (!selectedClass) {
-                return res.status(403).send('Вы не можете добавлять расписание для этого класса');
-            }
+    //         if (!selectedClass) {
+    //             return res.status(403).send('Вы не можете добавлять расписание для этого класса');
+    //         }
 
-            // Проверка на наложение расписания с разницей менее 3 часов
-            const startTime = new Date(DateClass);
-            startTime.setHours(startTime.getHours() - 3); // Начало окна - 3 часа
+    //         // Проверка на наложение расписания с разницей менее 3 часов
+    //         const startTime = new Date(DateClass);
+    //         startTime.setHours(startTime.getHours() - 3); // Начало окна - 3 часа
 
-            const endTime = new Date(DateClass);
-            endTime.setHours(endTime.getHours() + 3); // Конец окна + 3 часа
+    //         const endTime = new Date(DateClass);
+    //         endTime.setHours(endTime.getHours() + 3); // Конец окна + 3 часа
 
-            const existingSchedules = await models.scheduler.findAll({
-                where: {
-                    ClassId: ClassId,
-                    DateClass: {
-                        [Op.between]: [startTime, endTime]
-                    }
-                }
-            });
+    //         const existingSchedules = await models.scheduler.findAll({
+    //             where: {
+    //                 ClassId: ClassId,
+    //                 DateClass: {
+    //                     [Op.between]: [startTime, endTime]
+    //                 }
+    //             }
+    //         });
 
-            if (existingSchedules.length > 0) {
+    //         if (existingSchedules.length > 0) {
 
-                return res.status(400).send('Расписание накладывается на существующее, должно быть минимум 3 часа между расписаниями');
-            }
+    //             return res.status(400).send('Расписание накладывается на существующее, должно быть минимум 3 часа между расписаниями');
+    //         }
 
-            const newSchedule = await models.scheduler.create({
-                ClassId: ClassId,
-                DateClass: DateClass,
-                TotalSpots: TotalSpots,
-                AvailableSpots: AvailableSpots,
-                Status: 2 // Установка статуса "ожидание"
-            });
+    //         const newSchedule = await models.scheduler.create({
+    //             ClassId: ClassId,
+    //             DateClass: DateClass,
+    //             TotalSpots: TotalSpots,
+    //             AvailableSpots: AvailableSpots,
+    //             Status: 2 // Установка статуса "ожидание"
+    //         });
 
-            res.redirect(`/profile/addSchedule`);
-        } catch (error) {
-            console.error('Ошибка при добавлении расписания:', error);
-            res.status(500).send('Произошла ошибка при добавлении расписания');
-        }
-    }
+    //         res.redirect(`/profile/addSchedule`);
+    //     } catch (error) {
+    //         console.error('Ошибка при добавлении расписания:', error);
+    //         res.status(500).send('Произошла ошибка при добавлении расписания');
+    //     }
+    // }
 
-    async editSchedulerView(req, res) {
-        const { id } = req.params;
-        const scheduler = await models.scheduler.findByPk(id, {
-            include: [
-                {
-                    model: models.services,
-                    attributes: ['Name', 'ServiceId'],
-                    required: true
-                }
-            ],
-            raw: true
-        });
-        const services  = await models.services.findAll({
-            where: {
-                MasterId: req.session.masterId
-            }
-        });
-        res.render("./layouts/editSchedule.hbs", { layout: "editSchedule.hbs", scheduler: scheduler, services :services  });
-    }
+    // async editSchedulerView(req, res) {
+    //     const { id } = req.params;
+    //     const scheduler = await models.scheduler.findByPk(id, {
+    //         include: [
+    //             {
+    //                 model: models.services,
+    //                 attributes: ['Name', 'ServiceId'],
+    //                 required: true
+    //             }
+    //         ],
+    //         raw: true
+    //     });
+    //     const services  = await models.services.findAll({
+    //         where: {
+    //             MasterId: req.session.masterId
+    //         }
+    //     });
+    //     res.render("./layouts/editSchedule.hbs", { layout: "editSchedule.hbs", scheduler: scheduler, services :services  });
+    // }
 
-    async editSchedule(req, res) { //подумать как сделать, надо может передавать статус
-        const { id } = req.params;
-        try {
-            const { ClassId, DateClass, TotalSpots, AvailableSpots } = req.body;
-            const scheduler = await models.scheduler.findByPk(id, { raw: true });
+    // async editSchedule(req, res) { //подумать как сделать, надо может передавать статус
+    //     const { id } = req.params;
+    //     try {
+    //         const { ClassId, DateClass, TotalSpots, AvailableSpots } = req.body;
+    //         const scheduler = await models.scheduler.findByPk(id, { raw: true });
 
-            if (!scheduler) {
-                return res.status(404).send('Расписание не найдено');
-            }
-            // Проверка на наложение расписания с разницей менее 3 часов
-            const startTime = new Date(DateClass);
-            startTime.setHours(startTime.getHours() - 3); // Начало окна - 3 часа
+    //         if (!scheduler) {
+    //             return res.status(404).send('Расписание не найдено');
+    //         }
+    //         // Проверка на наложение расписания с разницей менее 3 часов
+    //         const startTime = new Date(DateClass);
+    //         startTime.setHours(startTime.getHours() - 3); // Начало окна - 3 часа
 
-            const endTime = new Date(DateClass);
-            endTime.setHours(endTime.getHours() + 3); // Конец окна + 3 часа
+    //         const endTime = new Date(DateClass);
+    //         endTime.setHours(endTime.getHours() + 3); // Конец окна + 3 часа
 
-            const existingSchedules = await models.scheduler.findAll({
-                where: {
-                    ClassId: ClassId,
-                    DateClass: {
-                        [Op.between]: [startTime, endTime]
-                    }
-                }
-            });
+    //         const existingSchedules = await models.scheduler.findAll({
+    //             where: {
+    //                 ClassId: ClassId,
+    //                 DateClass: {
+    //                     [Op.between]: [startTime, endTime]
+    //                 }
+    //             }
+    //         });
 
-            if (existingSchedules.length > 0) {
-                return res.status(400).send('Расписание накладывается на существующее, должно быть минимум 3 часа между расписаниями');
-            }
+    //         if (existingSchedules.length > 0) {
+    //             return res.status(400).send('Расписание накладывается на существующее, должно быть минимум 3 часа между расписаниями');
+    //         }
 
-            await models.scheduler.update({
-                Status: TotalSpots,
-                AvailableSpots: AvailableSpots,
-                DateClass: DateClass,
-                ClassId: ClassId
-            },
-                {
-                    where: { SchedulerId: id }
-                });
+    //         await models.scheduler.update({
+    //             Status: TotalSpots,
+    //             AvailableSpots: AvailableSpots,
+    //             DateClass: DateClass,
+    //             ClassId: ClassId
+    //         },
+    //             {
+    //                 where: { SchedulerId: id }
+    //             });
 
-            res.redirect(`/profile/addSchedule`);
+    //         res.redirect(`/profile/addSchedule`);
 
-        } catch (error) {
-            console.error('Ошибка при обновлении расписания:', error);
-            res.status(500).send('Произошла ошибка при обновлении расписания');
-        }
-    }
+    //     } catch (error) {
+    //         console.error('Ошибка при обновлении расписания:', error);
+    //         res.status(500).send('Произошла ошибка при обновлении расписания');
+    //     }
+    // }
 
-    async deleteSchedule(req, res) {
-        const { id } = req.params;
-        try {
+    // async deleteSchedule(req, res) {
+    //     const { id } = req.params;
+    //     try {
 
-            const scheduler = await models.scheduler.findByPk(id);
-            if (!scheduler) {
-                return res.status(404).send('Расписание не найдено');
-            }
-            await scheduler.destroy();
-            res.status(200).send('Расписание успешно удалено');
+    //         const scheduler = await models.scheduler.findByPk(id);
+    //         if (!scheduler) {
+    //             return res.status(404).send('Расписание не найдено');
+    //         }
+    //         await scheduler.destroy();
+    //         res.status(200).send('Расписание успешно удалено');
 
-        } catch (error) {
-            console.error('Ошибка при удалении расписания:', error);
-            res.status(500).send('Произошла ошибка при удалении расписания');
-        }
-    }
+    //     } catch (error) {
+    //         console.error('Ошибка при удалении расписания:', error);
+    //         res.status(500).send('Произошла ошибка при удалении расписания');
+    //     }
+    // }
 
-    //  не подойдет 
+
     async getOrderPage(req, res) {
         try {
             if (!req.session.masterId) {
                 return res.status(403).send('Необходима регистрация');
             }
-            const master = await models.enrollment.findByPk(req.session.masterId);
-
+            const master = await models.masters.findByPk(req.session.masterId);
             if (!master) {
                 return res.status(404).send('Мастер не найден');
             }
-            const servicesDetailes = await models.services.findAll({
-
+            const enrollments = await models.enrollment.findAll({
+                where: {
+                    Status: [0, 2, 1], // Проверка на status 0 или 1
+                },
                 include: [
                     {
-                        model: models.masters,
-                        attributes: ['Name'], // Указываем, что нам нужно только имя преподавателя
-                        required: true // Если преподаватель не указан, классы без преподавателя не будут возвращены
+                        model: models.services,
+                        attributes: ["ServiceId", "Name", "MasterId"],
+                        where: {
+                            MasterId: req.session.masterId,
+                        },
+                        include: [
+                            {
+                                model: models.types,
+                                attributes: ["TypeName", "TypeId"], // Атрибуты из Types
+                            },
+                            {
+                                model: models.masters,
+                                attributes: ["MasterId", "Name"], // Атрибуты из Masters
+                            },
+                        ],
                     },
-                    {
-                        model: models.types,
-                        attributes: ['TypeName'] // Указываем, что нам нужно только название типа
-                    }
                 ],
-                where: {
-                    MasterId: req.session.masterId // Добавляем условие на MasterId
-                },
-                raw: true
+                raw: true,
             });
-            const services  = servicesDetailes.map(courseDetail => ({
-                ServiceId: courseDetail.ServiceId,
-                Name: courseDetail.Name,
-                Description: courseDetail.Description,
-                Master: courseDetail['Master.Name'],
-                TypeName: courseDetail['Type.TypeName'],
+            
+            const enrollmentsWithDetails = enrollments.map(enrollment => {
+                return {
+                    EnrollmentId: enrollment.EnrollmentId,
+                    ServiceName: enrollment['Service.Name'],
+                    Name: enrollment['Service.Type.TypeName'],
+                    TypeId: enrollment['Service.Type.TypeId'],
+                    MasterName: enrollment['Service.Master.Name'],
+                    MasterId: enrollment['Service.Master.MasterId'],
+                    Date: enrollment.Date,
+                    Time: enrollment.Time,
+                    Duration: enrollment.Duration,
+                    Status: enrollment.Status
+                };
+            });
 
-            }));
-            const types = await models.types.findAll({ raw: true })
-            res.render("./layouts/profileServices.hbs", { layout: "profileServices.hbs", services : services , types: types });
+            return res.render("./layouts/masterOrder.hbs", { layout: "masterOrder.hbs", enrollments: enrollmentsWithDetails });
+
         } catch (error) {
             console.error('Ошибка при открытии страницы с классами:', error);
             res.status(500).send('Произошла ошибка при открытии страницы с классами');
@@ -524,51 +538,101 @@ class ProfileController {
 
     }
 
-    async editOrder(req, res) { //подумать как сделать, надо может передавать статус
-        const { id } = req.params;
+    async editOrder(req, res) { 
+        const { enrollmentId, actionType, comment } = req.body;
         try {
-            const { ClassId, DateClass, TotalSpots, AvailableSpots } = req.body;
-            const scheduler = await models.scheduler.findByPk(id, { raw: true });
-
-            if (!scheduler) {
-                return res.status(404).send('Расписание не найдено');
+            if (!req.session.masterId) {
+                return res.status(403).send('Необходима регистрация');
             }
-            // Проверка на наложение расписания с разницей менее 3 часов
-            const startTime = new Date(DateClass);
-            startTime.setHours(startTime.getHours() - 3); // Начало окна - 3 часа
+            const master = await models.masters.findByPk(req.session.masterId);
 
-            const endTime = new Date(DateClass);
-            endTime.setHours(endTime.getHours() + 3); // Конец окна + 3 часа
+            if (!master) {
+                return res.status(404).send('Мастер не найден');
+            }
 
-            const existingSchedules = await models.scheduler.findAll({
-                where: {
-                    ClassId: ClassId,
-                    DateClass: {
-                        [Op.between]: [startTime, endTime]
-                    }
-                }
+            if (actionType === 'reject') {
+                await models.enrollment.update(
+                    { Status: 2, Comments: comment }, 
+                    { where: { EnrollmentId: enrollmentId } }
+                );
+            } else if (actionType === 'approve') {
+                await models.enrollment.update(
+                    { Status: 1, Comments: comment },
+                    { where: { EnrollmentId: enrollmentId } }
+                );
+
+            await models.scheduler.create({
+                EnrollmentId: enrollmentId,
+                ApprovedTime: new Date()
             });
-
-            if (existingSchedules.length > 0) {
-                return res.status(400).send('Расписание накладывается на существующее, должно быть минимум 3 часа между расписаниями');
-            }
-
-            await models.scheduler.update({
-                Status: TotalSpots,
-                AvailableSpots: AvailableSpots,
-                DateClass: DateClass,
-                ClassId: ClassId
-            },
-                {
-                    where: { SchedulerId: id }
-                });
-
-            res.redirect(`/profile/addSchedule`);
-
+            
+            }  
+            res.status(200).send('Успешно обновлено');
         } catch (error) {
             console.error('Ошибка при обновлении расписания:', error);
             res.status(500).send('Произошла ошибка при обновлении расписания');
         }
+    }
+
+    async getShedulePage(req, res) {
+        try {
+            if (!req.session.masterId) {
+                return res.status(403).send('Необходима регистрация');
+            }
+            const master = await models.masters.findByPk(req.session.masterId);
+
+            if (!master) {
+                return res.status(404).send('Мастер не найден');
+            }
+            const shedulesDetailes = await models.scheduler.findAll({
+                include: [
+                    {
+                        model: models.enrollment,
+                        where: {
+                            Status: 1 
+                        },
+                        include: [
+                            {
+                                model: models.services,
+                                attributes: ["MasterId", "Name"],
+                                where:{
+                                    MasterId:req.session.masterId
+                                }
+                            }, {
+                                model: models.users,
+                                attributes:["ID", "Login", "Email"]
+                            }
+                        ],
+                    }
+                ],
+                raw: true
+            });
+            const schedules = shedulesDetailes.map(scheduleDetail => ({
+                ServiceId: scheduleDetail['Enrollment.Service.ServiceId'], // ID услуги
+                Name: scheduleDetail['Enrollment.Service.Name'], // Название услуги
+                ApprovedTime: scheduleDetail.ApprovedTime, // Время утверждения
+                MasterId: scheduleDetail['Enrollment.Service.MasterId'], // ID мастера
+                User: {
+                    ID: scheduleDetail['Enrollment.User.ID'], // ID пользователя
+                    Login: scheduleDetail['Enrollment.User.Login'], // Логин пользователя
+                    Email: scheduleDetail['Enrollment.User.Email'], // Email пользователя
+                },
+                Enrollment: {
+                    EnrollmentId: scheduleDetail['Enrollment.EnrollmentId'], // ID записи
+                    Status: scheduleDetail['Enrollment.Status'], // Статус записи
+                    Date: scheduleDetail['Enrollment.Date'], // Дата услуги
+                    Time: scheduleDetail['Enrollment.Time'], // Время услуги
+                    Duration: scheduleDetail['Enrollment.Duration'], // Длительность услуги
+                    Comments: scheduleDetail['Enrollment.Comments'], // Комментарии
+                    Address: scheduleDetail['Enrollment.Address']
+                }
+            }));
+            res.render("./layouts/profileShedules.hbs", { layout: "profileShedules.hbs", shedulesDetailes: schedules });
+        } catch (error) {
+            console.error('Ошибка при открытии страницы с классами:', error);
+            res.status(500).send('Произошла ошибка при открытии страницы с классами');
+        }
+
     }
 
 }

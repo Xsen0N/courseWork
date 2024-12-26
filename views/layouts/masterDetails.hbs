@@ -115,7 +115,20 @@
         <div class="master">
             <img src="data:image/jpeg;base64,{{master.Photo}}" alt="Фото мастера" />
             <p>{{master.Name}}</p>
-            <p>{{master.Description}}</p>
+            <p>
+                {{#if master.Description}}
+                    {{master.Description}}
+                {{else}}
+                    У специалиста пока не указано описание.
+                {{/if}}
+            </p>
+            <p> Цена за час (BYN): 
+                {{#if master.PriceForHour}}
+                    {{master.PriceForHour}}
+                {{else}}
+                    У специалиста пока не указана цена.
+                {{/if}}
+            </p>
         </div>
         <div class="gallery">
             {{#if gallery.length}}
@@ -135,12 +148,12 @@
             <div class="class">
                 <h4>{{this.Name}}</h4>
                 <p>{{this.Description}}</p>
-                <button class="details-button" data-class-id="{{ClassId}}">Записаться!</button>
+                <button class="details-button" data-class-id="{{ServiceId}}">Заказать услугу!</button>
             </div>
             {{/each}}
         </div>
         {{else}}
-        <p class="no-content">У мастера пока нет мастер-классов</p>
+        <p class="no-content">У мастера пока нет услуг</p>
         {{/if}}
     </div>
     <script>

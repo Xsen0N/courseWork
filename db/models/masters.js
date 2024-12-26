@@ -24,6 +24,10 @@ module.exports = function(sequelize, DataTypes) {
       Description: {
         type: DataTypes.STRING,
         allowNull: true
+      },
+      PriceForHour: {
+        type: DataTypes.DOUBLE,
+        allowNull: true
       }
     }, {
       sequelize,

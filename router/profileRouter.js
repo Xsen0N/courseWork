@@ -11,6 +11,9 @@ profileRouter
     .get("/orders", profileController.getServicesPage)
     .get('/getService/:serviceId', profileController.getService)
     .get("/gallery", profileController.getGallery)
+    .post("/enrollment/action", profileController.editOrder)
+    .get("/enrollment", profileController.getOrderPage)
+    .get("/shedules", profileController.getShedulePage)
 
     .post("/addService", profileController.addService)
     .post("/editService", profileController.editOrder)
@@ -20,8 +23,8 @@ profileRouter
     .delete('/gallery/delete/:galleryId', profileController.deleteGallery )
 
     .get("/addSchedule", profileController.getSchedulePage)
-    .post("/addSchedule", profileController.addSchedule)
-    .delete('/deleteSchedule/:id', profileController.deleteSchedule)
+    // .post("/addSchedule", profileController.addSchedule)
+    // .delete('/deleteSchedule/:id', profileController.deleteSchedule)
 
     .get("/addSchedule", profileController.getSchedulePage)
     ;

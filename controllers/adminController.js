@@ -69,7 +69,7 @@ class AdminController {
             await isAdmin(req, res, async () => {
                 const schedulerDetails = await models.scheduler.findAll({
                     include: {
-                        model: models.services,
+                        model: models.enrollment,
                         attributes: ['Name'],
                         required: true
                     }, raw: true
@@ -200,7 +200,7 @@ class AdminController {
                     TypeName: TypeName,
                     Description: Description
                 });
-                res.status(201).send('Тип успешно добавлен ');
+                res.redirect(`/admin/types`);
             });
         } catch (error) {
             console.error('Ошибка при добавлении типа:', error);

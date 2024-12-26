@@ -59,7 +59,7 @@ class EnrollmentController {
                         },
                         {
                             model: models.masters,
-                            attributes: ['MasterId', 'Name'], // Выбираем только атрибуты MasterId и MasterName из модели masters
+                            attributes: ['MasterId', 'Name', 'PriceForHour'], // Выбираем только атрибуты MasterId и MasterName из модели masters
                             raw: true
                         }
                     ],
@@ -73,10 +73,27 @@ class EnrollmentController {
                     TypeName: servicesWithDetails['Type.TypeName'],
                     TypeId: servicesWithDetails['Type.TypeId'],
                     Master: servicesWithDetails['Master.Name'],
-                    MasterId: servicesWithDetails['Master.MasterId']
+                    MasterId: servicesWithDetails['Master.MasterId'],
+                    PriceForHour: servicesWithDetails['Master.PriceForHour']
                 };
 
-
+                const busySlots = await models.scheduler.findAll({
+                    include: [
+                        {
+                            model: models.enrollment,
+                            attributes: [ 'Duration', 'Date', 'Time'],
+                            include: [
+                                {
+                                    model: models.services,
+                                    where: { MasterId: servicesWithDetails['Master.MasterId'] }
+                                }
+                            ]
+                        }
+                    ],
+                    attributes: ['ApprovedTime'],
+                    raw: true
+                });
+                
                 return res.render("./layouts/addEnrollment.hbs", { layout: "addEnrollment.hbs", services: service });
             } else {
                 return res.redirect('/services');
@@ -121,7 +138,7 @@ class EnrollmentController {
                             },
                             {
                                 model: models.masters,
-                                attributes: ["MasterId", "Name"], // Атрибуты из Masters
+                                attributes: ["MasterId", "Name", "PriceForHour"], // Атрибуты из Masters
                             },
                         ],
                     },
@@ -136,14 +153,16 @@ class EnrollmentController {
                     Name: enrollment['Service.Type.TypeName'],
                     TypeId: enrollment['Service.Type.TypeId'],
                     MasterName: enrollment['Service.Master.Name'],
+                    PriceForHour: enrollment['Service.Master.PriceForHour'],
                     MasterId: enrollment['Service.Master.MasterId'],
                     Date: enrollment.Date,
                     Time: enrollment.Time,
                     Duration: enrollment.Duration,
-                    Status: enrollment.Status
+                    Status: enrollment.Status,
+                    Address: enrollment.Address,
+                    Comments: enrollment.Comments,
                 };
             });
-
             return res.render("./layouts/personalOrder.hbs", { layout: "personalOrder.hbs", enrollments: enrollmentsWithDetails });
 
 
@@ -155,7 +174,7 @@ class EnrollmentController {
 
     async addEnrollment(req, res) {
         try {
-            const { ServiceId, Date, Time, Duration } = req.body;
+            const { ServiceId, Date, Time, Duration, Address } = req.body;
             const master = req.session.masterId;
             const user = await models.users.findByPk(req.session.userId)
             if (master) {
@@ -177,8 +196,8 @@ class EnrollmentController {
                 Status: 0, // 0 -на рассмотрении, 1 - approve, 2 - отказ
                 Date: Date,
                 Time: Time,
-                Duration: Duration
-
+                Duration: Duration,
+                Address: Address
             });
 
             // await sendMail(user.Email, scheduler.DateClass);
@@ -192,36 +211,9 @@ class EnrollmentController {
     }
 
 
-
-    async editEnrollment(req, res) {
-        const { id } = req.params;
-        try {
-            const { spotsCount, schedulerId } = req.body;
-
-            const enrollment = await models.enrollment.findByPk(id);
-
-            if (!enrollment) {
-                return res.status(404).send('Запись на курс не найдена');
-            }
-
-            await enrollment.update({
-                SpotsCount: spotsCount,
-                SchedulerId: schedulerId,
-                UserId: req.session.userId
-            });
-
-            res.send('Информация о записи на курс успешно обновлена');
-        } catch (error) {
-            console.error('Ошибка при обновлении записи на курс:', error);
-            res.status(500).send('Произошла ошибка при обновлении записи на курс');
-        }
-    }
-
     async cancelEnrollment(req, res) {
         const enrollmentId = req.params.id;
         const { status } = req.body;
-
-        // Предположим, что у вас есть модель Enrollment
         try {
             const enrollment = await models.enrollment.findByPk(enrollmentId);
             if (enrollment) {

@@ -10,7 +10,7 @@ module.exports = function(sequelize, DataTypes) {
         allowNull: false
       },
       ApprovedTime: {
-        type: DataTypes.INTEGER,
+        type: DataTypes.DATE,
         allowNull: false
       }
     }, {

@@ -9,7 +9,7 @@ enrollmentRouter
     .post('/addEnrollment', enrollmentController.addEnrollment)
     //.get('/updateenrollment', enrollmentController.editEnrollmentView)
     .put('/cancel/:id', enrollmentController.cancelEnrollment)
-    .put('/updateenrollment', enrollmentController.editEnrollment)
+    //.put('/updateenrollment', enrollmentController.editEnrollment)
     .delete('/deleteenrollment', enrollmentController.deleteEnrollment);
    
 

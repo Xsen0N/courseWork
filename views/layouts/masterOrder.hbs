@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Заказы мастера</title>
+    <style>
+        /* Основные стили */
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #f5f7fa, #c3cfe2);
+            margin: 0;
+            padding: 0;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        h1 {
+            text-align: center;
+            color: #444;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Карточки заказов */
+        .card {
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            margin: 20px 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .card h3 {
+            margin: 0 0 15px;
+            font-size: 1.4em;
+            color: #2c3e50;
+        }
+
+        .card p {
+            margin: 5px 0;
+            font-size: 1em;
+            color: #555;
+        }
+
+        .card .status {
+            margin-top: 15px;
+            font-weight: bold;
+            font-size: 0.9em;
+            padding: 5px 10px;
+            border-radius: 5px;
+            width: fit-content;
+        }
+
+        .card .status.pending {
+            background: #ff9800;
+            color: white;
+        }
+
+        .card .status.confirmed {
+            background: #4caf50;
+            color: white;
+        }
+
+        .card .status.cancelled {
+            background: #e74c3c;
+            color: white;
+        }
+
+        .card button {
+            margin-top: 15px;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.9em;
+            transition: background 0.3s ease, transform 0.2s ease;
+        }
+
+        .card button.approve {
+            background: #4caf50;
+            color: white;
+        }
+
+        .card button.reject {
+            background: #e74c3c;
+            color: white;
+        }
+
+        .card button:hover {
+            transform: scale(1.05);
+        }
+
+        /* Модальное окно */
+        #actionModal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            display: none;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            text-align: center;
+            max-width: 400px;
+            width: 100%;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .modal-content h2 {
+            margin-bottom: 20px;
+            color: #333;
+        }
+
+        .modal-content textarea {
+            width: 80%;
+            height: 100px;
+            margin: 10px 0;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 0.9em;
+            resize: none;
+        }
+
+        .modal-content button {
+            margin: 5px;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.9em;
+            transition: background 0.3s ease, transform 0.2s ease;
+        }
+
+        .modal-content button[type="submit"] {
+            background: #4caf50;
+            color: white;
+        }
+
+        .modal-content button[type="button"] {
+            background: #e74c3c;
+            color: white;
+        }
+
+        .modal-content button:hover {
+            transform: scale(1.05);
+        }
+
+        /* Анимация появления модального окна */
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
+</head>
+<body>
+    {{> masterHeader}}
+    <div class="container">
+        <h1>Ваши заказы</h1>
+        {{#each enrollments}}
+        <div class="card">
+            <h3>{{ServiceName}}</h3>
+            <p><strong>Тип услуги:</strong> {{Name}}</p>
+            <p><strong>Дата:</strong> {{Date}}</p>
+            <p><strong>Время:</strong> <span class="formatted-time">{{Time}}</span></p>
+            <p><strong>Длительность:</strong> {{Duration}} часов</p>
+            <div class="status {{#if (eq Status 0)}}pending{{else if (eq Status 1)}}confirmed{{else}}cancelled{{/if}}">
+                {{#if (eq Status 0)}}На рассмотрении{{else if (eq Status 1)}}Подтверждено{{else}}Отклонено{{/if}}
+            </div>
+            {{#if (eq Status 0)}}
+            <button class="action-button approve" data-enrollment-id="{{EnrollmentId}}" data-action="approve">Одобрить</button>
+            <button class="action-button reject" data-enrollment-id="{{EnrollmentId}}" data-action="reject">Отклонить</button>
+            {{/if}}
+        </div>
+        {{/each}}
+    </div>
+
+    <div id="actionModal">
+        <div class="modal-content">
+            <h2 id="modalTitle">Действие мастера</h2>
+            <form  id="actionForm" action="/profile/enrollment/action" method="POST">
+                <input type="hidden" id="enrollmentId" name="enrollmentId" />
+                <input type="hidden" id="actionType" name="actionType" />
+                <label for="comment">Комментарий:</label>
+                <textarea id="comment" name="comment" required></textarea>
+                <button type="submit">Отправить</button>
+                <button type="button" id="closeModal">Закрыть</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+document.addEventListener("DOMContentLoaded", function () {
+    const modal = document.getElementById('actionModal');
+    const modalTitle = document.getElementById('modalTitle');
+    const actionForm = document.getElementById('actionForm');
+    const enrollmentIdField = document.getElementById('enrollmentId');
+    const actionTypeField = document.getElementById('actionType');
+    const commentField = document.getElementById('comment');
+    const closeModalButton = document.getElementById('closeModal');
+
+    const timeElements = document.querySelectorAll('.formatted-time');
+
+    // Форматирование времени
+    timeElements.forEach(function (timeElement) {
+        const timeString = timeElement.textContent.trim();
+        const date = new Date(timeString);
+        const hours = date.getUTCHours().toString().padStart(2, '0'); // Часы (в формате 2 знаков)
+        const minutes = date.getUTCMinutes().toString().padStart(2, '0'); // Минуты (в формате 2 знаков)
+        const formattedTime = `${hours}:${minutes}`;
+        timeElement.textContent = formattedTime;
+    });
+
+    // Открытие модального окна
+    document.querySelectorAll('.action-button').forEach(button => {
+        button.addEventListener('click', function () {
+            const enrollmentId = button.getAttribute('data-enrollment-id');
+            const action = button.getAttribute('data-action');
+            enrollmentIdField.value = enrollmentId;
+            actionTypeField.value = action;
+            commentField.value = '';
+            modalTitle.textContent = action === 'approve' ? 'Одобрение заявки' : 'Отклонение заявки';
+            modal.style.display = 'flex';
+        });
+    });
+
+    // Закрытие модального окна
+    closeModalButton.addEventListener('click', function () {
+        modal.style.display = 'none';
+    });
+
+    // Обработка отправки формы
+    actionForm.addEventListener('submit', async function (event) {
+        event.preventDefault(); // Остановить стандартное поведение отправки формы
+
+        const formData = new FormData(actionForm);
+        const data = Object.fromEntries(formData);
+
+        try {
+            const response = await fetch(actionForm.action, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(data),
+            });
+
+            if (response.ok) {
+                modal.style.display = 'none'; // Скрыть модальное окно
+                location.reload(); // Перезагрузить страницу
+            } else {
+                const errorText = await response.text();
+                alert(`Ошибка: ${errorText}`);
+            }
+        } catch (error) {
+            console.error('Ошибка при отправке формы:', error);
+            alert('Произошла ошибка при отправке запроса.');
+        }
+    });
+});
+
+    </script>
+</body>
+</html>
