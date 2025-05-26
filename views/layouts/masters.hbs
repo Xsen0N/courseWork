@@ -29,6 +29,7 @@
         }
 
         .filters input[type="text"],
+        .filters select,
         .filters input[type="checkbox"] {
             padding: 10px;
             border: 1px solid #ccc;
@@ -38,6 +39,7 @@
         }
 
         .filters input[type="text"]:focus,
+        .filters select:focus,
         .filters input[type="checkbox"]:focus {
             border-color: #007bff;
             outline: none;
@@ -121,73 +123,91 @@
 
 <body>
     {{> header}}
-  <div class="container">
+    <div class="container">
         <div class="filters">
-            <input type="text" id="searchInput" placeholder="Поиск...">
+            <!-- Поиск по имени -->
+            <input type="text" id="searchInput" placeholder="Поиск по имени...">
+
+            <!-- Фильтр по наличию описания -->
             <input type="checkbox" id="descriptionFilter">
             <label for="descriptionFilter">С описанием</label>
+
+            <!-- Фильтр по цене -->
+            <select id="priceFilter">
+                <option value="">Любая цена</option>
+                <option value="0-50">До 50 BYN</option>
+                <option value="50-100">50–100 BYN</option>
+                <option value="100+">Более 100 BYN</option>
+            </select>
         </div>
 
         <div id="masters-list" class="master-cards">
             {{#each masters}}
             <div class="master-card" data-name="{{Name}}" data-description="{{Description}}"
-                data-works-count="{{worksCountsMap.[this.MasterId]}}">
-                {{> master}}
+                data-type="{{this.class.ArtType}}" data-price="{{PriceForHour}}">
+                <h2>{{Name}}</h2>
+                {{#if Photo}}
+                <img src="data:{{PhotoType}};base64,{{Photo}}" alt="Фото мастера {{Name}}" width="100">
+                {{/if}}
+                <p>{{Description}}</p>
+                <p><strong>Цена за час:</strong> {{PriceForHour}} BYN</p>
                 <a href="/masters/{{this.MasterId}}">Посмотреть детали</a>
-                <span>{{this.class.ArtType}}</span>
             </div>
             {{/each}}
         </div>
     </div>
 
     <script>
-        // Функция для поиска мастеров по имени или описанию
+        // Функция для поиска мастеров по имени
         document.getElementById('searchInput').addEventListener('input', function () {
             var searchText = this.value.toLowerCase();
-            var masterCards = document.querySelectorAll('.master-card');
-            masterCards.forEach(function (card) {
-                var name = card.dataset.name.toLowerCase();
-                if (name.includes(searchText)) {
-                    card.style.display = 'block';
-                } else {
-                    card.style.display = 'none';
-                }
-            });
+            filterMasters();
         });
 
         // Функция для фильтрации мастеров по наличию описания
         document.getElementById('descriptionFilter').addEventListener('change', function () {
-            var isChecked = this.checked;
+            filterMasters();
+        });
+
+        // Функция для фильтрации мастеров по цене
+        document.getElementById('priceFilter').addEventListener('change', function () {
+            filterMasters();
+        });
+
+        // Основная функция фильтрации
+        function filterMasters() {
+            var searchText = document.getElementById('searchInput').value.toLowerCase();
+            var descriptionFilter = document.getElementById('descriptionFilter').checked;
+            var priceFilter = document.getElementById('priceFilter').value;
+
             var masterCards = document.querySelectorAll('.master-card');
             masterCards.forEach(function (card) {
+                var name = card.dataset.name.toLowerCase();
                 var description = card.dataset.description;
-                if (isChecked && description.trim() !== '') {
-                    card.style.display = 'block';
-                } else if (!isChecked) {
+                var price = parseFloat(card.dataset.price); // Преобразуем цену в число
+
+                var matchesSearch = name.includes(searchText);
+                var matchesDescription = !descriptionFilter || description.trim() !== '';
+                var matchesPrice = true;
+
+                // Фильтрация по цене
+                if (priceFilter) {
+                    if (priceFilter === "0-50") {
+                        matchesPrice = price <= 50;
+                    } else if (priceFilter === "50-100") {
+                        matchesPrice = price > 50 && price <= 100;
+                    } else if (priceFilter === "100+") {
+                        matchesPrice = price > 100;
+                    }
+                }
+
+                if (matchesSearch && matchesDescription && matchesPrice) {
                     card.style.display = 'block';
                 } else {
                     card.style.display = 'none';
                 }
             });
-        });
-
-        // Функция для фильтрации мастеров по наличию примеров работ
-        document.getElementById('worksFilter').addEventListener('change', function () {
-            var isChecked = this.checked;
-            var masterCards = document.querySelectorAll('.master-card');
-            masterCards.forEach(function (card) {
-                var worksCount = parseInt(card.dataset.worksCount);
-                if (isChecked) {
-                    if (worksCount > 0) {
-                        card.style.display = 'block';
-                    } else {
-                        card.style.display = 'none';
-                    }
-                } else {
-                    card.style.display = 'block';
-                }
-            });
-        });
+        }
     </script>
 </body>
 

@@ -5,16 +5,20 @@ module.exports = function(sequelize, DataTypes) {
         primaryKey: true,
         autoIncrement: true
       },
+      ProfessionId: {
+        type: DataTypes.INTEGER,
+        allowNull: false
+      },
       Name: {
-        type: DataTypes.STRING(80),
+        type: DataTypes.STRING(1000),
         allowNull: false
       },
       Login: {
-          type: DataTypes.STRING(50),
+          type: DataTypes.STRING(1000),
           allowNull: false
       },
       Password: {
-        type: DataTypes.STRING,
+        type: DataTypes.STRING(60),
         allowNull: false
       },
       Photo: {

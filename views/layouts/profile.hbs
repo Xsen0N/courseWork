@@ -177,9 +177,9 @@
                 <hr>
                 <h2>Загрузить новую фотографию профиля</h2>
                 <form action="/profile/upload-photo" method="POST" enctype="multipart/form-data"
-                    onsubmit="return validateFileSize(this.photo)">
+                    onsubmit="return validateFileSize(this)">
                     <label for="photo">Выберите файл:</label>
-                    <input type="file" name="photo" accept="image/png, image/jpeg" required>
+                    <input type="file" name="photo" id="photo" accept="image/png, image/jpeg" required>
                     <br>
                     <br>
                     <button type="submit">Загрузить</button>
@@ -188,5 +188,18 @@
         </div>
     </div>
 </body>
-
+    <script>
+        function validateFileSize(form) {
+            const fileInput = form.querySelector('input[type="file"]');
+            if (fileInput.files.length > 0) {
+                const file = fileInput.files[0];
+                const maxSize = 1.5 * 1024 * 1024; // 1.5 МБ в байтах
+                if (file.size > maxSize) {
+                    alert('Файл слишком большой. Максимальный размер файла — 1,5 МБ.');
+                    return false; // Остановить отправку формы
+                }
+            }
+            return true; // Продолжить отправку формы
+        }
+    </script>
 </html>

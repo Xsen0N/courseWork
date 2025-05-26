@@ -53,15 +53,15 @@
     {{> adminHeader}}
 
     <div class="container">
-        <h1>Edit Type</h1>
+        <h1>Редактировать тип</h1>
         <form action="/admin/editType/{{type.TypeId}}" method="POST">
-            <label for="typeName">Type Name:</label>
+            <label for="typeName">Название типа:</label>
             <input type="text" id="typeName" name="typeName" value="{{type.TypeName}}" required>
             <br>
-            <label for="description">Description:</label>
+            <label for="description">Описание:</label>
             <textarea id="description" name="description" rows="4" required>{{type.Description}}</textarea>
             <br>
-            <button type="submit">Update Type</button>
+            <button type="submit">Обновить</button>
         </form>
     </div>
 </body>

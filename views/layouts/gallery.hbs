@@ -106,12 +106,11 @@
     </style>
 </head>
 <body>
-    <h1>Галерея мастера</h1>
     {{> masterHeader}}
 
     <div class="container">
         <div class="upload-form">
-            <form id="uploadPhotoForm" action="/gallery/upload" method="post" enctype="multipart/form-data">
+            <form id="uploadPhotoForm" action="/gallery/upload" method="post" enctype="multipart/form-data" onsubmit="return validateFileSize(this)">
                 <input type="file" name="photo" id="photo" required>
                 <label for="photo">Выбрать фото</label>
                 <button type="submit">Загрузить</button>
@@ -181,6 +180,19 @@
                 label.textContent = 'Выбрать фото';
             }
         });
+
+                function validateFileSize(form) {
+            const fileInput = form.querySelector('input[type="file"]');
+            if (fileInput.files.length > 0) {
+                const file = fileInput.files[0];
+                const maxSize = 1.5 * 1024 * 1024; // 1.5 МБ в байтах
+                if (file.size > maxSize) {
+                    alert('Файл слишком большой. Максимальный размер файла — 1,5 МБ.');
+                    return false; // Остановить отправку формы
+                }
+            }
+            return true; // Продолжить отправку формы
+        }
     </script>
 </body>
 </html>

@@ -5,6 +5,5 @@ const typesController = require('../controllers/typesController');
 
 typesRouter
     .get('/', typesController.getAllTypes)
-    .get('/:masterId', typesController.getMasterType)
     
 module.exports = typesRouter;

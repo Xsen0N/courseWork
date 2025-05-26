@@ -2,9 +2,6 @@ const express = require('express');
 const app = express();
 const expressSession = require('express-session');
 const http = require('http');
-const https = require('https');
-const fs = require('fs');
-const socketIo = require('socket.io');
 const hbs = require('express-handlebars').create({
     extname: '.hbs',
     helpers: {
@@ -13,63 +10,52 @@ const hbs = require('express-handlebars').create({
         formatDate: function(date) {
             const options = { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' };
             return new Date(date).toLocaleDateString('ru-RU', options);
-        }
+        },
+        split: function(str, options) {
+            if (typeof str !== 'string') return [];
+            const delimiter = options.hash.delimiter || ',';
+            return str.split(delimiter).map(s => s.trim());
+          },
+         or:  (a, b, options) =>a || b
     }
 });
 const path = require('path');
 const dotenv = require("dotenv").config();
-
-const port = process.env.PORT || 3000;
+const swaggerUi = require('swagger-ui-express');
+const YAML = require('yamljs');
 const bodyParser = require('body-parser');
 const router = require('./router/index');
 
-// Load SSL certificates
-const credentials = {
-    key: fs.readFileSync(path.join(__dirname, 'sslcert/LAB.key'), 'utf8'),
-    cert: fs.readFileSync(path.join(__dirname, 'sslcert/LAB.crt'), 'utf8')
-};
+const port = process.env.PORT || 8080;
 
-// Create HTTP and HTTPS servers
-const httpServer = http.createServer(app);
-const httpsServer = https.createServer(credentials, app);
-const io = socketIo(httpsServer);
-
-if (process.env.NODE_ENV === "development") {
-    const liveReload = require('livereload');
-    const connectLiveReload = require('connect-livereload');
-    const liveReloadServer = liveReload.createServer();
-    liveReloadServer.watch(path.join(__dirname, 'views'));
-    liveReloadServer.server.once("connection", () => {
-        setTimeout(() => {
-            liveReloadServer.refresh("/");
-        }, 100);
-    });
-    app.use(connectLiveReload());
-}
-
+// Настройка сессий
 app.use(expressSession({
     secret: 'SECRET',
     resave: false,
     saveUninitialized: false
 }));
+
+// Парсинг данных из форм и JSON
 app.use(bodyParser.urlencoded({ extended: false }));
+app.use(bodyParser.json());
+
+// Настройка Handlebars
 app.engine('.hbs', hbs.engine);
 app.set('view engine', '.hbs');
+
+// Статические файлы
 app.use(express.static(path.join(__dirname, 'public')));
-app.use(bodyParser.json());
+
+// Роутинг
 app.use('/', router);
 
-io.on('connection', (socket) => {
-    console.log('a user connected');
-    socket.on('disconnect', () => {
-        console.log('user disconnected');
-    });
-});
+// Загрузка Swagger-документации
+const swaggerDocument = YAML.load(path.join(__dirname, 'swagger.yaml'));
 
-// Start the HTTP and HTTPS servers
-httpServer.listen(8080, () => {
-    console.log(`HTTP Server running on port 8080`);
-});
-httpsServer.listen(8443, () => {
-    console.log(`HTTPS Server running on port https://localhost:8443/`);
+// Подключение Swagger UI
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
+
+// Запуск HTTP-сервера
+http.createServer(app).listen(port, () => {
+    console.log(`HTTP Server running on port ${port}`);
 });

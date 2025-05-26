@@ -1,4 +1,5 @@
 const { models } = require('../db/utils/db');
+const { Op } = require('sequelize');
 
 async function isAdmin(req, res, next) {
     const id = req.session.userId;
@@ -8,11 +9,11 @@ async function isAdmin(req, res, next) {
             next();
         } else {
             req.session.previousUrl = req.headers.referer;
-            return res.render('./layouts/error.hbs', {layout: "error.hbs", errorMessage: 'Доступ ограничен!' });
+            return res.status(403).render('./layouts/error.hbs', {layout: "error.hbs", errorMessage: 'Доступ ограничен!' });
         }
     } else {
         req.session.previousUrl = req.headers.referer;
-        return res.render('./layouts/error.hbs', {layout: "error.hbs", errorMessage: 'Ты точно админ?!' });
+        return res.status(400).render('./layouts/error.hbs', {layout: "error.hbs", errorMessage: 'Ты точно админ?!' });
     }
 }
 
@@ -21,7 +22,7 @@ class AdminController {
     async getAdminPage(req, res) {
         try {
             await isAdmin(req, res, async () => {
-                const classesDetailes = await models.services.findAll({
+                const serviceDetails = await models.services.findAll({
                     include: [
                         {
                             model: models.masters,
@@ -32,19 +33,36 @@ class AdminController {
                             model: models.types,
                             attributes: ['TypeName'] 
                         }
-                    ],
+                    ], 
+                    where: {
+                        Status: {
+                            [Op.ne]: 3
+                        }
+                    },
                     raw: true
                 });
-                const classes = classesDetailes.map(courseDetail => ({
-                    ClassId: courseDetail.ClassId,
-                    Name:courseDetail.Name,
-                    Description: courseDetail.Description,
-                    Master: courseDetail['Master.Name'],
-                    TypeName: courseDetail['Type.TypeName'],
-        
+    
+                const services = serviceDetails.map(service => ({
+                    ServiceId: service.ServiceId,
+                    Name: service.Name,
+                    Description: service.Description,
+                    Master: service['Master.Name'],
+                    TypeName: service['Type.TypeName'],
+                    Location: service.Location,
+                    Status: service.Status
                 }));
-
-                res.render("./layouts/admin.hbs", { layout: "admin.hbs", classes:classes });
+    
+                // Разделяем услуги по статусам
+                const pendingServices = services.filter(s => s.Status === 0);
+                const approvedServices = services.filter(s => s.Status === 1);
+                const rejectedServices = services.filter(s => s.Status === 2);
+    
+                res.status(200).render("./layouts/admin.hbs", { 
+                    layout: "admin.hbs", 
+                    pendingServices,
+                    approvedServices,
+                    rejectedServices
+                });
             });
         } catch (error) {
             console.error('Ошибка при проверке роли администратора:', error);
@@ -55,8 +73,11 @@ class AdminController {
     async getAllUsers(req, res) {
         try {
             await isAdmin(req, res, async () => {
-                const users = await models.users.findAll({ raw: true });
-                res.render("./layouts/users.hbs", { layout: "users.hbs", users: users });
+                const users = await models.users.findAll({  where: {
+                    Role: 0,
+                },
+                raw: true });
+                res.status(200).render("./layouts/users.hbs", { layout: "users.hbs", users: users});
             });
         } catch (error) {
             console.error('Ошибка при получении пользователей:', error);
@@ -64,26 +85,74 @@ class AdminController {
         }
     }
 
+    async getCriterias(req, res) {
+        try {
+            await isAdmin(req, res, async () => {
+                const criterias = await models.criterias.findAll({
+                raw: true });
+                res.status(200).render("./layouts/criterias.hbs", { layout: "criterias.hbs", criterias: criterias});
+            });
+        } catch (error) {
+            console.error('Ошибка при получении критериев:', error);
+            res.status(500).send('Произошла ошибка при получении критериев');
+        }
+    }
+
     async getScheduler(req, res) {
         try {
             await isAdmin(req, res, async () => {
-                const schedulerDetails = await models.scheduler.findAll({
-                    include: {
-                        model: models.enrollment,
-                        attributes: ['Name'],
-                        required: true
-                    }, raw: true
+                const shedulesDetailes = await models.scheduler.findAll({
+                    include: [
+                        {
+                            model: models.enrollment,
+                            include: [
+                                {
+                                    model: models.services,
+                                    attributes: ["MasterId", "Name",],
+                                    include:[
+                                        {
+                                            model: models.masters,
+                                            attributes: ["MasterId", "Name", "Login",],
+                                        }
+                                    ]
+                                }, {
+                                    model: models.users,
+                                    attributes:["ID", "Login", "Email"]
+                                }
+                            ],
+                        }
+                    ],
+                    raw: true
                 });
-                const schedule = schedulerDetails.map(scheduler => ({
-                    SchedulerId: scheduler.SchedulerId,
-                    TotalSpots: scheduler.TotalSpots,
-                    AvailableSpots: scheduler.AvailableSpots,
-                    DateClass: scheduler.DateClass,
-                    Status: scheduler.Status,
-                    ClassId: scheduler.ClassId,
-                    ClassName: scheduler['Class.Name']
-                }))
-                res.render("./layouts/schedule.hbs", { layout: "schedule.hbs", schedule: schedule });
+                const schedules = shedulesDetailes.map(scheduleDetail => ({
+                    ServiceId: scheduleDetail['Enrollment.Service.ServiceId'], // ID услуги
+                    Name: scheduleDetail['Enrollment.Service.Name'], // Название услуги
+                    ApprovedTime: scheduleDetail.ApprovedTime, // Время утверждения
+                    MasterId: scheduleDetail['Enrollment.Service.MasterId'], // ID мастера
+                    MasterName: scheduleDetail['Enrollment.Service.Master.Name'],
+                    MasterLogin: scheduleDetail['Enrollment.Service.Master.Login'],
+                    User: {
+                        ID: scheduleDetail['Enrollment.User.ID'], // ID пользователя
+                        Login: scheduleDetail['Enrollment.User.Login'], // Логин пользователя
+                        Email: scheduleDetail['Enrollment.User.Email'], // Email пользователя
+                    },
+                    Enrollment: {
+                        EnrollmentId: scheduleDetail['Enrollment.EnrollmentId'], // ID записи
+                        Status: scheduleDetail['Enrollment.Status'], // Статус записи
+                        Date: scheduleDetail['Enrollment.Date'], // Дата услуги
+                        Time: scheduleDetail['Enrollment.Time'], // Время услуги
+                        Duration: scheduleDetail['Enrollment.Duration'], // Длительность услуги
+                        Comments: scheduleDetail['Enrollment.Comments'], // Комментарии
+                        Address: scheduleDetail['Enrollment.Address']
+                    }
+                }));
+
+                const users = await models.users.findAll({  where: {
+                    Role: 0,
+                },
+                raw: true });
+                const masters =  await models.masters.findAll({ raw: true });
+                res.status(200).render("./layouts/schedule.hbs", { layout: "schedule.hbs", schedule: schedules, users: users,masters: masters  });
             });
         } catch (error) {
             console.error('Ошибка при получении расписания:', error);
@@ -91,16 +160,89 @@ class AdminController {
         }
     }
 
+    async getServices(req, res) {
+        try {
+            await isAdmin(req, res, async () => {
+                const servicesDetailes = await models.services.findAll({
+                    include: [
+                        {
+                            model: models.masters,
+                            attributes: ['Name', 'PriceForHour', "MasterId","Login"], 
+                            required: true
+                        },
+                        {
+                            model: models.types,
+                            attributes: ['TypeName', 'TypeId']
+                        }
+                    ],
+                    raw: true
+                });
+                const services = servicesDetailes.map(courseDetail => ({
+                    ServiceId: courseDetail.ServiceId,
+                    Name:courseDetail.Name,
+                    Location: courseDetail.Location, 
+                    Description: courseDetail.Description,
+                    Master: courseDetail['Master.Name'],
+                    Login: courseDetail['Master.Login'],
+                    MasterId: courseDetail['Master.MasterId'],
+                    PriceForHour: courseDetail['Master.PriceForHour'],
+                    TypeName: courseDetail['Type.TypeName'],
+                    TypeId: courseDetail['Type.TypeId'],
+                }));
+                const types = await models.types.findAll({ raw: true})
+                res.status(200).render("./layouts/adminServices.hbs", { layout: "adminServices.hbs", services: services, types: types  });
+        
+            });
+        } catch (error) {
+            console.error('Ошибка при получении критериев:', error);
+            res.status(500).send('Произошла ошибка при получении критериев');
+        }
+    }
+
     async getEnrollment(req, res) {
         try {
             await isAdmin(req, res, async () => {
-                const enrollment = await models.enrollment.findAll({ raw: true });
+                const enrollments = await models.enrollment.findAll({
+                    include: [
+                        {
+                            model: models.services,
+                            attributes: ["ServiceId", "Name", "MasterId"],
+                            include: [
+                                {
+                                    model: models.types,
+                                    attributes: ["TypeName", "TypeId"], // Атрибуты из Types
+                                },
+                                {
+                                    model: models.masters,
+                                    attributes: ["MasterId", "Name"], // Атрибуты из Masters
+                                },
+                            ],
+                        },
+                    ],
+                    raw: true,
+                });
+                
+                const enrollmentsWithDetails = enrollments.map(enrollment => {
+                    return {
+                        EnrollmentId: enrollment.EnrollmentId,
+                        ServiceName: enrollment['Service.Name'],
+                        Name: enrollment['Service.Type.TypeName'],
+                        TypeId: enrollment['Service.Type.TypeId'],
+                        MasterName: enrollment['Service.Master.Name'],
+                        MasterId: enrollment['Service.Master.MasterId'],
+                        Date: enrollment.Date,
+                        Time: enrollment.Time,
+                        Duration: enrollment.Duration,
+                        Status: enrollment.Status,
+                        Comments: enrollment.Comments
+                    };
+                });
 
-                res.render("./layouts/entry.hbs", { layout: "entry.hbs", enrollment: enrollment });
+                res.status(200).render("./layouts/entry.hbs", { layout: "entry.hbs", enrollment: enrollmentsWithDetails });
             });
         } catch (error) {
-            console.error('Ошибка при получении записей на курсы:', error);
-            res.status(500).send('Произошла ошибка при получении записей на курсы');
+            console.error('Ошибка при получении записей:', error);
+            res.status(500).send('Произошла ошибка при получении записей');
         }
     }
 
@@ -114,11 +256,11 @@ class AdminController {
                         master.PhotoType = 'image/jpeg'; // или 'image/png', если нужно
                     }
                 }
-                res.render("./layouts/changingMasters.hbs", { layout: "changingMasters.hbs", masters: masters });
+                res.status(200).render("./layouts/changingMasters.hbs", { layout: "changingMasters.hbs", masters: masters });
             });
         } catch (error) {
-            console.error('Ошибка при получении записей на курсы:', error);
-            res.status(500).send('Произошла ошибка при получении записей на курсы');
+            console.error('Ошибка при получении специалистов', error);
+            res.status(500).send('Произошла ошибка при получении специалистов');
         }
     }
 
@@ -126,11 +268,11 @@ class AdminController {
         try {
             await isAdmin(req, res, async () => {
                 const types = await models.types.findAll({ raw: true });
-                res.render("./layouts/types.hbs", { layout: "types.hbs", types: types });
+                res.status(200).render("./layouts/types.hbs", { layout: "types.hbs", types: types });
             });
         } catch (error) {
-            console.error('Ошибка при получении записей на курсы:', error);
-            res.status(500).send('Произошла ошибка при получении записей на курсы');
+            console.error('Ошибка при получении получении типов', error);
+            res.status(500).send('Произошла ошибка при получении типов');
         }
     }
 
@@ -141,11 +283,11 @@ class AdminController {
             const masterId = req.params.id;
             await isAdmin(req, res, async () => {
                 const masters = await models.masters.findByPk(masterId, { raw: true });
-                res.render("./layouts/editMaster.hbs", { layout: "editMaster.hbs", master: masters });
+                res.status(200).render("./layouts/editMaster.hbs", { layout: "editMaster.hbs", master: masters });
             });
         } catch (error) {
-            console.error('Ошибка при получении записей на курсы:', error);
-            res.status(500).send('Произошла ошибка при получении записей на курсы');
+            console.error('Ошибка при получении редактировании мастера', error);
+            res.status(500).send('Произошла ошибка при редактировании мастера');
         }
     }
 
@@ -187,8 +329,8 @@ class AdminController {
                 res.render("./layouts/addType.hbs", { layout: "addType.hbs" });
             });
         } catch (error) {
-            console.error('Ошибка при получении записей на курсы:', error);
-            res.status(500).send('Произошла ошибка при получении записей на курсы');
+            console.error('Ошибка при показе типов', error);
+            res.status(500).send('Произошла ошибка при показе типо');
         }
     }
 
@@ -209,11 +351,15 @@ class AdminController {
     }
 
     async editTypeView(req, res) {
+        try {
         const { id } = req.params;
         await isAdmin(req, res, async () => {
             const type = await models.types.findByPk(id, { raw: true })
             res.render("./layouts/editType.hbs", { layout: "editType.hbs", type: type });
-        })
+        })}catch (error) {
+            console.error('Ошибка при отображении редактирования типа:', error);
+            res.status(500).send('Произошла ошибка при отображении редактирования типа');
+        }
     }
 
     async editType(req, res) {
@@ -243,7 +389,6 @@ class AdminController {
 
     async deleteType(req, res) {
         const { id } = req.params;
-        console.log(id)
         try {
             await isAdmin(req, res, async () => {
                 const type = await models.types.findByPk(id);
@@ -277,6 +422,23 @@ class AdminController {
         }
     }
 
+    async deleteService(req, res) {
+        const { id } = req.params;
+        try {
+            await isAdmin(req, res, async () => {
+                const service = await models.services.findByPk(id);
+                if (!service) {
+                    return res.status(404).send('Услуга не найдена');
+                }
+                await service.destroy();
+                return res.render('./layouts/infoAdmin.hbs', {layout: "infoAdmin.hbs", message: 'Услуга успешно удалена' });
+            });
+        } catch (error) {
+            console.error('Ошибка при удалении:', error);
+            res.status(500).send('Произошла ошибка при удалении');
+        }
+    }
+
     async deleteMaster(req, res) {
         const { id } = req.params;
         console.log(id)
@@ -295,103 +457,210 @@ class AdminController {
         }
     }
 
-    async editClassView(req, res) {
-        const { id } = req.params;
-        await isAdmin(req, res, async () => {
-            const type = await models.services.findByPk(id, { raw: true })
-            res.render("./layouts/editClass.hbs", { layout: "editClass.hbs", type: type });
-        })
-    }
+    //CREATERIAS
 
-    async editClass(req, res) {
+    async deleteCriterion(req, res) {
         const { id } = req.params;
         try {
             await isAdmin(req, res, async () => {
-                const { name, description, artType } = req.body;
-                const classInstance = await models.services.findByPk(id, { raw: true });
-                if (!classInstance) {
-                    return res.status(404).send('Класс не найден');
+                const criterion = await models.criterias.findByPk(id);
+                if (!criterion) {
+                    return res.status(404).send('Критерий не найден');
                 }
-                await models.services.update({
-                    Name: name,
-                    Description: description,
-                    ArtType: artType
-                },
-                    {
-                        where: { ClassId: id }
-                    });
-                return res.render('./layouts/infoAdmin.hbs', {layout: "infoAdmin.hbs", message: 'Информация о классе успешно обновлена' });
-
-            })
-        } catch (error) {
-            console.error('Ошибка при обновлении класса:', error);
-            res.status(500).send('Произошла ошибка при обновлении класса');
-        }
-    }
-
-    async deleteClass(req, res) {
-        const { id } = req.params;
-        try {
-            const classInstance = await models.services.findByPk(id);
-            if (!classInstance) {
-                return res.status(404).send('Класс не найден');
-            }
-            await classInstance.destroy();
-            return res.render('./layouts/infoAdmin.hbs', {layout: "infoAdmin.hbs", message: 'Класс успешно удален' });
-
-        } catch (error) {
-            console.error('Ошибка при удалении класса:', error);
-            res.status(500).send('Произошла ошибка при удалении класса');
-        }
-    }
-
-    //Scheduler
-
-    async editSchedulerView(req, res) {
-        await isAdmin(req, res, async () => {
-            res.render("./layouts/editSchedule.hbs", { layout: "editSchedule.hbs", type: type });
-        })
-    }
-
-    async editScheduler(req, res) { //подумать как сделать, надо может передавать статус
-        const { scheduleId, statusId } = req.params;
-
-        try {
-            const schedule = await models.scheduler.findByPk(scheduleId, { raw: true });
-
-            if (!schedule) {
-                return res.status(404).json({ success: false, message: 'Расписание не найдено.' });
-            }
-            await models.scheduler.update({
-                Status: statusId,
-            },
-                {
-                    where: { SchedulerId: scheduleId }
-                });
-
-            res.status(200).json({ success: true, message: 'Статус расписания успешно изменен.' });
-        } catch (error) {
-            console.error('Ошибка при изменении статуса расписания:', error);
-            res.status(500).json({ success: false, message: 'Ошибка при изменении статуса расписания.' });
-        }
-    }
-
-    async deleteEnrollment(req, res) {
-        const { id } = req.params;
-        try {
-            await isAdmin(req, res, async () => {
-                const enrollment = await models.enrollment.findByPk(id);
-                if (!enrollment) {
-                    return res.status(404).send('Запись на курс не найдена');
-                }
-                await enrollment.destroy();
-                res.send('Запись на курс успешно удалена');
+                await criterion.destroy();
+                return res.status(200).render('./layouts/infoAdmin.hbs', {layout: "infoAdmin.hbs", message: 'Критерий успешно удален' });
             });
         } catch (error) {
-            console.error('Ошибка при удалении записи на курс:', error);
-            res.status(500).send('Произошла ошибка при удалении записи на курс');
+            console.error('Ошибка при удалении:', error);
+            res.status(500).send('Произошла ошибка при удалении критерия');
         }
     }
+
+    
+    async addCriterias(req, res) {
+        try {
+            await isAdmin(req, res, async () => {
+                const { Name, Description, Status } = req.body;
+                await models.criterias.create({
+                    Name: Name,
+                    Description: Description,
+                    Status: Status
+                });
+                res.status(204).redirect(`/admin/criterias`);
+            });
+        } catch (error) {
+            console.error('Ошибка при добавлении критерия:', error);
+            res.status(500).send('Произошла ошибка при добавлении критерия');
+        }
+    }
+
+    async editCriterias(req, res) {
+        const { id } = req.params;
+        try {
+            await isAdmin(req, res, async () => {
+                const { Name, Description, Status } = req.body;
+                const criterion = await models.criterias.findByPk(id, { raw: true });
+                if (!criterion) {
+                    return res.status(404).send('Критерий не найден');
+                }
+                await models.criterias.update({
+                    Name: Name,
+                    Description: Description,
+                    Status: Status
+                },
+                    {
+                        where: { CriteriasId: id }
+                    });
+                return res.status(200).render('./layouts/infoAdmin.hbs', {layout: "infoAdmin.hbs", message: 'Информация о критерии успешно обновлена' });
+            });
+
+        } catch (error) {
+            console.error('Ошибка при обновлении критерия:', error);
+            res.status(500).send('Произошла ошибка при обновлении критерия');
+        }
+    }
+
+
+
+        //PROPESSIONS
+        async deleteProfession(req, res) {
+            const { id } = req.params;
+            try {
+                await isAdmin(req, res, async () => {
+                    const profession = await models.professions.findByPk(id);
+                    if (!profession) {
+                        return res.status(404).send('Специальность не найдена');
+                    }
+                    await profession.destroy();
+                    return res.status(200).render('./layouts/infoAdmin.hbs', {layout: "infoAdmin.hbs", message: 'Специальность успешно удалена' });
+                });
+            } catch (error) {
+                console.error('Ошибка при удалении:', error);
+                res.status(500).send('Произошла ошибка при удалении специальности');
+            }
+        }
+        
+        async addProfession(req, res) {
+            try {
+                await isAdmin(req, res, async () => {
+                    const { ProfessionName, Description } = req.body;
+                    await models.professions.create({
+                        ProfessionName: ProfessionName,
+                        Description: Description
+                    });
+                    res.status(204).redirect(`/admin/professions`);
+                });
+            } catch (error) {
+                console.error('Ошибка при добавлении специализации:', error);
+                res.status(500).send('Произошла ошибка при добавлении специализации');
+            }
+        }
+
+        async editProfession(req, res) {
+            const { id } = req.params;
+            try {
+                await isAdmin(req, res, async () => {
+                    const { ProfessionName, Description } = req.body;
+                    const profession = await models.professions.findByPk(id, { raw: true });
+                    if (!profession) {
+                        return res.status(404).send('Специализация не найдена');
+                    }
+                    await models.professions.update({
+                        ProfessionName: ProfessionName,
+                        Description: Description
+                    },
+                        {
+                            where: { ProfessionId: id }
+                        });
+                    return res.status(200).render('./layouts/infoAdmin.hbs', {layout: "infoAdmin.hbs", message: 'Информация успешно обновлена' });
+                });
+    
+            } catch (error) {
+                console.error('Ошибка при обновлении специализации:', error);
+                res.status(500).send('Произошла ошибка при обновлении специализации');
+            }
+        }
+
+        async getProfessions(req, res) {
+            try {
+                await isAdmin(req, res, async () => {
+                    const professions = await models.professions.findAll({
+                    raw: true });
+                    res.status(200).render("./layouts/professions.hbs", { layout: "professions.hbs", professions: professions});
+                });
+            } catch (error) {
+                console.error('Ошибка при получении критериев:', error);
+                res.status(500).send('Произошла ошибка при получении критериев');
+            }
+        }
+
+        async changeStatusOfService(req, res) {
+            const { id } = req.params;
+            const { status } = req.body;
+        
+            try {
+                if (isNaN(id)) return res.status(400).json({ error: "Неверный ID" });
+                if (![0, 1, 2].includes(Number(status))) {
+                    return res.status(400).json({ error: "Недопустимый статус" });
+                }
+        
+                const service = await models.services.findByPk(id, {
+                    include: [{
+                        model: models.masters,
+                        attributes: ['MasterId']
+                    }],
+                    raw: true
+                });
+                
+                if (!service) return res.status(404).json({ error: "Услуга не найдена" });
+        
+                // Обновляем статус услуги
+                await models.services.update(
+                    { Status: status },
+                    { where: { ServiceId: id } }
+                );
+                console.log(service)
+        
+                // Создаем уведомление
+                let notificationMessage, notificationType;
+                
+                switch(status) {
+                    case 1: // Одобрено
+                        notificationMessage = `Ваша услуга "${service.Name}" была одобрена`;
+                        notificationType = 'application_status';
+                        break;
+                    case 2: // Отклонено
+                        notificationMessage = `Ваша услуга "${service.Name}" была отклонена`;
+                        notificationType = 'application_status';
+                        break;
+                    case 0: // На рассмотрении
+                        notificationMessage = `Ваша услуга "${service.Name}" отправлена на повторное рассмотрение`;
+                        notificationType = 'application_status';
+                        break;
+                }
+        
+                // Создаем уведомление в базе данных
+                await models.notifications.create({
+                    Message: notificationMessage,
+                    Type: notificationType,
+                    MasterId: service['Master.MasterId'], // Используем MasterId из связанной модели
+                    Metadata: JSON.stringify({ // Сериализуем объект в строку
+                        serviceId: service.ServiceId,
+                        serviceName: service.Name,
+                        newStatus: status
+                    }),
+                    isRead: false
+                });
+                
+                res.json({ message: "Статус успешно обновлен" });
+            } catch (error) {
+                console.error('Ошибка:', error);
+                res.status(500).json({ 
+                    error: 'Ошибка обновления статуса',
+                    details: error.errors 
+                });
+            }
+        }
 }
 
 

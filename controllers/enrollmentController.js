@@ -6,7 +6,7 @@ const twoHoursLater = new Date();
 twoHoursLater.setHours(today.getHours() + 2);
 
 
-async function sendMail(userEmail, schedulerDate) {
+async function sendMail(userEmail) {
     const transporter = nodemailer.createTransport({
         service: 'gmail',
         auth: {
@@ -19,7 +19,7 @@ async function sendMail(userEmail, schedulerDate) {
         from: 'courseproject@gmail.com',
         to: userEmail,
         subject: 'Спасибо за отправку формы!',
-        text: `Спасибо за ваш выбор! Вы успешно записались на курс! Ждем вас на мастер-классе по улице Солнечная в ${schedulerDate}!`
+        text: `Спасибо за ваш выбор! Вы успешно Записались на услугу!Специалист с вами свяжется  и оставит комментрий под вашей заявкой!`
     };
 
     try {
@@ -39,6 +39,8 @@ class EnrollmentController {
             const userId = req.session.userId;
             const master = req.session.masterId;
             const serviceId = req.query.serviceId;
+
+            const service = await models.services.findByPk(serviceId);
             if (master) {
                 req.session.previousUrl = req.headers.referer;
                 return res.render('./layouts/error.hbs', { layout: "error.hbs", errorMessage: 'Вы мастер, нельзя записываться!' });
@@ -48,18 +50,26 @@ class EnrollmentController {
                 req.session.returnUrl = req.originalUrl;
                 return res.redirect('/auth/login');
             }
+            if (!service){
+                req.session.previousUrl = req.headers.referer;
+                return res.render('./layouts/error.hbs', { layout: "error.hbs", errorMessage: 'Услуга не найдена!' });
+            }
+            if (service.status !== 1){
+                req.session.previousUrl = req.headers.referer;
+                return res.render('./layouts/error.hbs', { layout: "error.hbs", errorMessage: 'Услуга временно недоступна' });
+            }
 
             if (serviceId) {
                 const servicesWithDetails = await models.services.findByPk(serviceId, {
                     include: [
                         {
                             model: models.types,
-                            attributes: ['TypeName', 'TypeId'], // Выбираем только атрибут TypeName из модели types
+                            attributes: ['TypeName', 'TypeId'], 
                             raw: true
                         },
                         {
                             model: models.masters,
-                            attributes: ['MasterId', 'Name', 'PriceForHour'], // Выбираем только атрибуты MasterId и MasterName из модели masters
+                            attributes: ['MasterId', 'Name', 'PriceForHour'],
                             raw: true
                         }
                     ],
@@ -76,23 +86,6 @@ class EnrollmentController {
                     MasterId: servicesWithDetails['Master.MasterId'],
                     PriceForHour: servicesWithDetails['Master.PriceForHour']
                 };
-
-                const busySlots = await models.scheduler.findAll({
-                    include: [
-                        {
-                            model: models.enrollment,
-                            attributes: [ 'Duration', 'Date', 'Time'],
-                            include: [
-                                {
-                                    model: models.services,
-                                    where: { MasterId: servicesWithDetails['Master.MasterId'] }
-                                }
-                            ]
-                        }
-                    ],
-                    attributes: ['ApprovedTime'],
-                    raw: true
-                });
                 
                 return res.render("./layouts/addEnrollment.hbs", { layout: "addEnrollment.hbs", services: service });
             } else {
@@ -200,7 +193,7 @@ class EnrollmentController {
                 Address: Address
             });
 
-            // await sendMail(user.Email, scheduler.DateClass);
+            await sendMail(user.Email);
 
             res.status(201).send(res.redirect('/'));
 
@@ -226,23 +219,6 @@ class EnrollmentController {
         } catch (error) {
             console.error(error);
             res.status(500).json({ success: false, message: 'Ошибка сервера' });
-        }
-    }
-
-    async deleteEnrollment(req, res) {
-        const { id } = req.params;
-        try {
-            const enrollment = await models.enrollment.findByPk(id);
-
-            if (!enrollment) {
-                return res.status(404).send('Запись на курс не найдена');
-            }
-
-            await enrollment.destroy();
-            res.send('Запись на курс успешно удалена');
-        } catch (error) {
-            console.error('Ошибка при удалении записи на курс:', error);
-            res.status(500).send('Произошла ошибка при удалении записи на курс');
         }
     }
 

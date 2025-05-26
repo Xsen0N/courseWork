@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Service</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f9f9f9;
+            margin: 0;
+            padding: 0;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 20px auto;
+            padding: 0 20px;
+        }
+
+        /* Стили для поиска и фильтра */
+        #search {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 20px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 1rem;
+            transition: border-color 0.3s;
+        }
+
+        #search:focus {
+            border-color: #007bff;
+            outline: none;
+        }
+
+        #type {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 20px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 1rem;
+            transition: border-color 0.3s;
+        }
+
+        #type:focus {
+            border-color: #007bff;
+            outline: none;
+        }
+
+        /* Стили для карточек услуг */
+        .services {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .class-card {
+            background-color: #fff;
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            padding: 20px;
+            width: calc(33.33% - 20px);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .class-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15);
+        }
+
+        .class-card h3 {
+            margin-top: 0;
+            font-size: 1.2rem;
+            color: #007bff;
+        }
+
+        .class-card p {
+            margin: 10px 0;
+            color: #666;
+            font-size: 1rem;
+        }
+
+        .class-card strong {
+            color: #333;
+        }
+
+        /* Стили для кнопки "Записаться" */
+        .details-button {
+            background-color: #007bff;
+            border: none;
+            color: #fff;
+            padding: 10px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: background-color 0.3s, transform 0.3s;
+        }
+
+        .details-button:hover {
+            background-color: #0056b3;
+            transform: translateY(-2px);
+        }
+
+        /* Адаптивность */
+        @media (max-width: 992px) {
+            .class-card {
+                width: calc(50% - 20px);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .class-card {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+
+<body>
+     {{> adminHeader}}
+<!-- adminServices.hbs -->
+<div class="container mt-5">
+    <h1>Управление услугами</h1>
+    
+    <!-- Фильтры -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <form method="GET" class="row g-3">
+                <div class="col-md-3">
+                    <input type="text" name="search" class="form-control" 
+                           placeholder="Поиск по названию" value="{{currentFilters.search}}">
+                </div>
+                <div class="col-md-2">
+                    <select name="status" class="form-select">
+                        <option value="">Все статусы</option>
+                        <option value="0" {{#eq currentFilters.status '0'}}selected{{/eq}}>На рассмотрении</option>
+                        <option value="1" {{#eq currentFilters.status '1'}}selected{{/eq}}>Одобренные</option>
+                        <option value="2" {{#eq currentFilters.status '2'}}selected{{/eq}}>Отклоненные</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <select name="master" class="form-select">
+                        <option value="">Все мастера</option>
+                        {{#each masters}}
+                        <option value="{{this.MasterId}}" {{#eq this.MasterId ../currentFilters.master}}selected{{/eq}}>
+                            {{this.Name}}
+                        </option>
+                        {{/each}}
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <select name="type" class="form-select">
+                        <option value="">Все типы</option>
+                        {{#each types}}
+                        <option value="{{this.TypeId}}" {{#eq this.TypeId ../currentFilters.type}}selected{{/eq}}>
+                            {{this.TypeName}}
+                        </option>
+                        {{/each}}
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <button type="submit" class="btn btn-primary w-100">Фильтр</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Вкладки -->
+    <ul class="nav nav-tabs mb-4">
+        <li class="nav-item">
+            <a class="nav-link {{#unless currentFilters.status}}active{{/unless}}" 
+               href="/admin/services">Все</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link {{#eq currentFilters.status '0'}}active{{/eq}}" 
+               href="/admin/services?status=0">На рассмотрении ({{counts.pending}})</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link {{#eq currentFilters.status '1'}}active{{/eq}}" 
+               href="/admin/services?status=1">Одобренные ({{counts.approved}})</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link {{#eq currentFilters.status '2'}}active{{/eq}}" 
+               href="/admin/services?status=2">Отклоненные ({{counts.rejected}})</a>
+        </li>
+    </ul>
+
+    <!-- Таблица услуг -->
+    <div class="table-responsive">
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Название</th>
+                    <th>Мастер</th>
+                    <th>Тип</th>
+                    <th>Статус</th>
+                    <th>Действия</th>
+                </tr>
+            </thead>
+            <tbody>
+                {{#each services}}
+                <tr>
+                    <td>{{this.Name}}</td>
+                    <td>{{this.MasterName}}</td>
+                    <td>{{this.TypeName}}</td>
+                    <td>
+                        <span class="badge 
+                            {{#eq this.Status 0}}bg-warning
+                            {{else if (eq this.Status 1)}}bg-success
+                            {{else}}bg-danger{{/eq}}">
+                            {{#eq this.Status 0}}На рассмотрении
+                            {{else if (eq this.Status 1)}}Одобрено
+                            {{else}}Отклонено{{/eq}}
+                        </span>
+                    </td>
+                    <td>
+                        {{#eq this.Status 0}}
+                            <button onclick="updateStatus({{this.ServiceId}}, 1)" 
+                                    class="btn btn-sm btn-success">Одобрить</button>
+                            <button onclick="updateStatus({{this.ServiceId}}, 2)" 
+                                    class="btn btn-sm btn-danger">Отклонить</button>
+                        {{else}}
+                            <button onclick="updateStatus({{this.ServiceId}}, 0)" 
+                                    class="btn btn-sm btn-secondary">Изменить решение</button>
+                        {{/eq}}
+                    </td>
+                </tr>
+                {{/each}}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+function updateStatus(serviceId, status) {
+    fetch(`/admin/services/${serviceId}/status`, {
+        method: 'PUT',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ status: status })
+    })
+    .then(response => {
+        if(response.ok) location.reload();
+        else alert('Ошибка обновления статуса');
+    });
+}
+</script>
+</body>
+
+</html>

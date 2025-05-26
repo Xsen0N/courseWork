@@ -16,8 +16,6 @@ class MastersController {
                 group: ['MasterId'],
                 raw: true
             });
-            
-            console.log(worksCounts)
             const worksCountsMap = worksCounts.reduce((acc, curr) => {
                 acc[curr.MasterId] = curr.worksCount;
                 return acc;
@@ -48,7 +46,6 @@ class MastersController {
                 },
                 raw: true
             });
-            console.log("Информация о услугах"+classes)
             const gallery = await models.gallery.findAll({
                 where: {
                     MasterId: masterId
@@ -69,23 +66,7 @@ class MastersController {
         }
     }
 
-    async addNewMaster(req, res) {
-        const { name, photo, artType, description } = req.body;
-        try {
-            const newMaster = await models.masters.create({
-                Name: name,
-                Photo: photo,
-                ArtType: artType,
-                Description: description
-            });
-            res.status(201).json(newMaster);
-        } catch (error) {
-            console.error('Ошибка при добавлении нового мастера:', error);
-            res.status(500).send('Произошла ошибка при добавлении нового мастера');
-        }
-    }
 
-    ///???
     async updateMaster(req, res) {
         const { id } = req.params;
         const { name, photo, artType, description } = req.body;
@@ -97,7 +78,7 @@ class MastersController {
             await master.update({
                 Name: name,
                 Photo: photo,
-                ArtType: artType,
+                Type: artType,
                 Description: description
             });
             res.json(master);
@@ -108,7 +89,6 @@ class MastersController {
     }
 
         ///???
-
     async deleteMaster(req, res) {
         const { id } = req.params;
         try {

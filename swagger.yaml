@@ -1,0 +1,1641 @@
+openapi: 3.0.0
+info:
+  title: My API
+  version: 1.0.0
+  description: API Documentation
+servers:
+  - url: http://localhost:8080
+    description: HTTP Server
+tags:
+  - name: Home
+    description: Главная страница
+  - name: Auth
+    description: Аутентификация пользователя
+  - name: Masters
+    description: Операции с мастерами
+  - name: Admin
+    description: Записи на услуги
+  - name: Services
+    description: Операции с услугами
+  - name: Types
+    description: Операции с типами услуг
+  - name: Profile
+    description: Профиль пользователя
+paths:
+  /:
+    get:
+      tags:
+        - Home
+      summary: Главная страница
+      description: Возвращает главную страницу.
+      responses:
+        '200':
+          description: Успешный ответ
+          content:
+            text/html:
+              schema:
+                type: string
+
+  /auth/login:
+    post:
+      tags:
+        - Auth
+      summary: Вход пользователя
+      description: Аутентифицирует пользователя и создает сессию.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                username:
+                  type: string
+                  example: "user123"
+                password:
+                  type: string
+                  example: "password123"
+      responses:
+        '302':
+          description: Успешная аутентификация, перенаправление на главную страницу или админ-панель
+          headers:
+            Location:
+              schema:
+                type: string
+              example: "/"
+        '401':
+          description: Неверное имя пользователя или пароль
+          content:
+            text/html:
+              schema:
+                type: string
+        '500':
+          description: Ошибка сервера
+          content:
+            text/plain:
+              schema:
+                type: string
+
+  /auth/register:
+    post:
+      tags:
+        - Auth
+      summary: Регистрация пользователя
+      description: Регистрирует нового пользователя.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                username:
+                  type: string
+                  example: "user123"
+                email:
+                  type: string
+                  example: "user@example.com"
+                password:
+                  type: string
+                  example: "password123"
+      responses:
+        '302':
+          description: Успешная регистрация, перенаправление на страницу входа
+          headers:
+            Location:
+              schema:
+                type: string
+              example: "/auth/login"
+        '400':
+          description: Некорректный адрес электронной почты, логин уже занят или email уже используется
+          content:
+            text/html:
+              schema:
+                type: string
+        '500':
+          description: Ошибка сервера
+          content:
+            text/plain:
+              schema:
+                type: string
+
+  /auth/loginMaster:
+    post:
+      tags:
+        - Auth
+      summary: Вход мастера
+      description: Аутентифицирует мастера и создает сессию.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                username:
+                  type: string
+                  example: "master123"
+                password:
+                  type: string
+                  example: "password123"
+      responses:
+        '302':
+          description: Успешная аутентификация, перенаправление на профиль
+          headers:
+            Location:
+              schema:
+                type: string
+              example: "/profile"
+        '401':
+          description: Неверный пароль
+          content:
+            text/html:
+              schema:
+                type: string
+        '500':
+          description: Ошибка сервера
+          content:
+            text/plain:
+              schema:
+                type: string
+
+  /auth/registerMaster:
+    post:
+      tags:
+        - Auth
+      summary: Регистрация мастера
+      description: Регистрирует нового мастера.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                username:
+                  type: string
+                  example: "master123"
+                realName:
+                  type: string
+                  example: "Иван Иванов"
+                password:
+                  type: string
+                  example: "password123"
+      responses:
+        '302':
+          description: Успешная регистрация, перенаправление на страницу входа мастера
+          headers:
+            Location:
+              schema:
+                type: string
+              example: "/auth/loginMaster"
+        '400':
+          description: Имя уже используется
+          content:
+            text/html:
+              schema:
+                type: string
+        '500':
+          description: Ошибка сервера
+          content:
+            text/plain:
+              schema:
+                type: string
+
+  /auth/logout:
+    get:
+      tags:
+        - Auth
+      summary: Выход из системы
+      description: Уничтожает сессию и выходит из системы.
+      responses:
+        '200':
+          description: Успешный выход из системы
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Вы успешно вышли из системы"
+        '500':
+          description: Ошибка сервера
+          content:
+            text/plain:
+              schema:
+                type: string
+
+  /auth/status:
+    get:
+      tags:
+        - Auth
+      summary: Статус аутентификации
+      description: Возвращает статус текущей сессии.
+      responses:
+        '200':
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  userId:
+                    type: integer
+                    example: 1
+                  masterId:
+                    type: integer
+                    example: 1
+                  isAuthenticated:
+                    type: boolean
+                    example: true
+        '500':
+          description: Ошибка сервера
+          content:
+            text/plain:
+              schema:
+                type: string
+  /masters:
+    get:
+      tags:
+        - Masters
+      summary: Получить всех мастеров
+      description: Возвращает список всех мастеров с их фотографиями и количеством работ.
+      responses:
+        '200':
+          description: Успешный ответ
+          content:
+            text/html:
+              schema:
+                type: string
+        '500':
+          description: Ошибка сервера
+          content:
+            text/plain:
+              schema:
+                type: string
+  /masters/{id}:
+    get:
+      tags:
+        - Masters
+      summary: Получить одного мастера
+      description: Возвращает информацию о мастере по его ID, включая его работы и галерею.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Успешный ответ
+          content:
+            text/html:
+              schema:
+                type: string
+        '404':
+          description: Мастер не найден
+          content:
+            text/html:
+              schema:
+                type: string
+        '500':
+          description: Ошибка сервера
+          content:
+            text/plain:
+              schema:
+                type: string
+
+    post:
+      tags:
+        - Masters
+      summary: Обновить мастера
+      description: Обновляет информацию о мастере по его ID.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  example: "Иван Иванов"
+                photo:
+                  type: string
+                  format: byte
+                  example: "base64 encoded image"
+                artType:
+                  type: string
+                  example: "Живопись"
+                description:
+                  type: string
+                  example: "Профессиональный художник"
+      responses:
+        '200':
+          description: Мастер успешно обновлен
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Master'
+        '404':
+          description: Мастер не найден
+          content:
+            text/plain:
+              schema:
+                type: string
+        '500':
+          description: Ошибка сервера
+          content:
+            text/plain:
+              schema:
+                type: string
+
+    delete:
+      tags:
+        - Masters
+      summary: Удалить мастера
+      description: Удаляет мастера по его ID.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: Мастер успешно удален
+        '404':
+          description: Мастер не найден
+          content:
+            text/plain:
+              schema:
+                type: string
+        '500':
+          description: Ошибка сервера
+          content:
+            text/plain:
+              schema:
+                type: string
+
+  /admin:
+    get:
+      tags:
+        - Admin
+      summary: Получить административную панель
+      description: Возвращает главную страницу административной панели.
+      responses:
+        '200':
+          description: Успешный ответ
+          content:
+            text/html:
+              schema:
+                type: string
+
+  /admin/masters:
+    get:
+      tags:
+        - Admin
+      summary: Получить список мастеров
+      description: Возвращает список всех мастеров.
+      responses:
+        '200':
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Master'
+
+  /admin/types:
+    get:
+      tags:
+        - Admin
+      summary: Получить список типов услуг
+      description: Возвращает список всех типов услуг.
+      responses:
+        '200':
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Type'
+
+  /admin/users:
+    get:
+      tags:
+        - Admin
+      summary: Получить список пользователей
+      description: Возвращает список всех пользователей.
+      responses:
+        '200':
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/User'
+
+  /admin/scheduler:
+    get:
+      tags:
+        - Admin
+      summary: Получить расписание
+      description: Возвращает расписание записей на услуги.
+      responses:
+        '200':
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Schedule'
+
+  /admin/enrollment:
+    get:
+      tags:
+        - Admin
+      summary: Получить записи на услуги
+      description: Возвращает список записей на услуги.
+      responses:
+        '200':
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Enrollment'
+
+  /admin/updateMaster/{id}:
+    get:
+      tags:
+        - Admin
+      summary: Получить форму редактирования мастера
+      description: Возвращает форму для редактирования данных мастера.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Успешный ответ
+          content:
+            text/html:
+              schema:
+                type: string
+
+    post:
+      tags:
+        - Admin
+      summary: Редактировать мастера
+      description: Обновляет данные мастера.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Master'
+      responses:
+        '200':
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Мастер успешно обновлен"
+
+  /admin/addType:
+    get:
+      tags:
+        - Admin
+      summary: Получить форму добавления типа услуги
+      description: Возвращает форму для добавления нового типа услуги.
+      responses:
+        '200':
+          description: Успешный ответ
+          content:
+            text/html:
+              schema:
+                type: string
+
+    post:
+      tags:
+        - Admin
+      summary: Добавить тип услуги
+      description: Создает новый тип услуги.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Type'
+      responses:
+        '201':
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Тип услуги успешно добавлен"
+
+  /admin/editType/{id}:
+    get:
+      tags:
+        - Admin
+      summary: Получить форму редактирования типа услуги
+      description: Возвращает форму для редактирования типа услуги.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Успешный ответ
+          content:
+            text/html:
+              schema:
+                type: string
+
+    post:
+      tags:
+        - Admin
+      summary: Редактировать тип услуги
+      description: Обновляет данные типа услуги.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Type'
+      responses:
+        '200':
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Тип услуги успешно обновлен"
+
+  /admin/deleteType/{id}:
+    delete:
+      tags:
+        - Admin
+      summary: Удалить тип услуги
+      description: Удаляет тип услуги по ID.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Тип услуги успешно удален"
+
+  /admin/deleteUser/{id}:
+    delete:
+      tags:
+        - Admin
+      summary: Удалить пользователя
+      description: Удаляет пользователя по ID.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Пользователь успешно удален"
+
+  /admin/deleteMaster/{id}:
+    delete:
+      tags:
+        - Admin
+      summary: Удалить мастера
+      description: Удаляет мастера по ID.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Мастер успешно удален"
+
+  /enrollment:
+    get:
+      tags:
+        - Enrollments
+      summary: Получить список заявок пользователя
+      description: Возвращает список заявок на услуги для текущего пользователя.
+      responses:
+        '200':
+          description: Успешный ответ
+          content:
+            text/html:
+              schema:
+                type: string
+        '302':
+          description: Перенаправление на страницу входа
+          headers:
+            Location:
+              schema:
+                type: string
+              example: "/auth/login"
+        '403':
+          description: Доступ запрещен (для мастеров и админов)
+          content:
+            text/html:
+              schema:
+                type: string
+        '500':
+          description: Ошибка сервера
+          content:
+            text/plain:
+              schema:
+                type: string
+
+  /addEnrollment:
+    post:
+      tags:
+        - Enrollments
+      summary: Создать новую заявку
+      description: Создает новую заявку на услугу для текущего пользователя.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                ServiceId:
+                  type: integer
+                  example: 1
+                Date:
+                  type: string
+                  format: date
+                  example: "2023-10-15"
+                Time:
+                  type: string
+                  example: "14:30"
+                Duration:
+                  type: integer
+                  example: 60
+                Address:
+                  type: string
+                  example: "Москва, ул. Ленина, д. 10"
+      responses:
+        '201':
+          description: Заявка успешно создана
+          headers:
+            Location:
+              schema:
+                type: string
+              example: "/"
+        '403':
+          description: Доступ запрещен (для мастеров и админов)
+          content:
+            text/html:
+              schema:
+                type: string
+        '500':
+          description: Ошибка сервера
+          content:
+            text/plain:
+              schema:
+                type: string
+
+  /cancel/{id}:
+    put:
+      tags:
+        - Enrollments
+      summary: Отменить заявку
+      description: Отменяет заявку на услугу по её ID.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  type: integer
+                  example: 2
+      responses:
+        '200':
+          description: Заявка успешно отменена
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+        '404':
+          description: Заявка не найдена
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: false
+                  message:
+                    type: string
+                    example: "Заявка не найдена"
+        '500':
+          description: Ошибка сервера
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: false
+                  message:
+                    type: string
+                    example: "Ошибка сервера"
+
+  /services:
+    get:
+      tags:
+        - Services
+      summary: Получить все услуги
+      description: Возвращает список всех услуг с информацией о мастерах и типах услуг.
+      responses:
+        '200':
+          description: Успешный ответ
+          content:
+            text/html:
+              schema:
+                type: string
+        '500':
+          description: Ошибка сервера
+          content:
+            text/plain:
+              schema:
+                type: string
+
+  /services/{id}:
+    get:
+      tags:
+        - Services
+      summary: Получить одну услугу
+      description: Возвращает информацию об услуге по её ID.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Service'
+        '404':
+          description: Услуга не найдена
+          content:
+            text/plain:
+              schema:
+                type: string
+        '500':
+          description: Ошибка сервера
+          content:
+            text/plain:
+              schema:
+                type: string
+
+
+  /types:
+    get:
+      tags:
+        - Types
+      summary: Получить список типов услуг
+      description: Возвращает список всех типов услуг.
+      responses:
+        '200':
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Type'
+
+  /profile:
+    get:
+      tags:
+        - Profile
+      summary: Получить страницу профиля
+      description: Возвращает страницу профиля мастера.
+      responses:
+        '200':
+          description: Успешный ответ
+          content:
+            text/html:
+              schema:
+                type: string
+        '404':
+          description: Мастер не найден
+          content:
+            text/html:
+              schema:
+                type: string
+        '500':
+          description: Ошибка сервера
+          content:
+            text/plain:
+              schema:
+                type: string
+
+  /profile/upload-photo:
+    post:
+      tags:
+        - Profile
+      summary: Загрузить фото профиля
+      description: Загружает фотографию профиля мастера.
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                photo:
+                  type: string
+                  format: binary
+      responses:
+        '302':
+          description: Фото успешно загружено, перенаправление на профиль
+          headers:
+            Location:
+              schema:
+                type: string
+              example: "/profile"
+        '404':
+          description: Мастер не найден
+          content:
+            text/plain:
+              schema:
+                type: string
+        '500':
+          description: Ошибка сервера
+          content:
+            text/plain:
+              schema:
+                type: string
+
+  /profile/editProfile:
+    post:
+      tags:
+        - Profile
+      summary: Редактировать профиль
+      description: Обновляет информацию профиля мастера.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  example: "Иван Иванов"
+                description:
+                  type: string
+                  example: "Профессиональный художник"
+                price:
+                  type: number
+                  example: 1000
+      responses:
+        '302':
+          description: Профиль успешно обновлен, перенаправление на профиль
+          headers:
+            Location:
+              schema:
+                type: string
+              example: "/profile"
+        '400':
+          description: Некорректные данные
+          content:
+            text/html:
+              schema:
+                type: string
+        '404':
+          description: Мастер не найден
+          content:
+            text/plain:
+              schema:
+                type: string
+        '500':
+          description: Ошибка сервера
+          content:
+            text/plain:
+              schema:
+                type: string
+
+  /profile/services:
+    get:
+      tags:
+        - Profile
+      summary: Получить страницу услуг
+      description: Возвращает страницу с услугами мастера.
+      responses:
+        '200':
+          description: Успешный ответ
+          content:
+            text/html:
+              schema:
+                type: string
+        '403':
+          description: Необходима регистрация
+          content:
+            text/plain:
+              schema:
+                type: string
+        '404':
+          description: Мастер не найден
+          content:
+            text/html:
+              schema:
+                type: string
+        '500':
+          description: Ошибка сервера
+          content:
+            text/plain:
+              schema:
+                type: string
+
+  /profile/orders:
+    get:
+      tags:
+        - Profile
+      summary: Получить страницу заказов
+      description: Возвращает страницу с заказами мастера.
+      responses:
+        '200':
+          description: Успешный ответ
+          content:
+            text/html:
+              schema:
+                type: string
+        '403':
+          description: Необходима регистрация
+          content:
+            text/plain:
+              schema:
+                type: string
+        '404':
+          description: Мастер не найден
+          content:
+            text/html:
+              schema:
+                type: string
+        '500':
+          description: Ошибка сервера
+          content:
+            text/plain:
+              schema:
+                type: string
+
+  /profile/getService/{serviceId}:
+    get:
+      tags:
+        - Profile
+      summary: Получить информацию об услуге
+      description: Возвращает информацию об услуге по её ID.
+      parameters:
+        - name: serviceId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Service'
+        '403':
+          description: Необходима регистрация
+          content:
+            text/plain:
+              schema:
+                type: string
+        '404':
+          description: Услуга не найдена
+          content:
+            text/plain:
+              schema:
+                type: string
+        '500':
+          description: Ошибка сервера
+          content:
+            text/plain:
+              schema:
+                type: string
+
+  /profile/gallery:
+    get:
+      tags:
+        - Profile
+      summary: Получить галерею
+      description: Возвращает галерею фотографий мастера.
+      responses:
+        '200':
+          description: Успешный ответ
+          content:
+            text/html:
+              schema:
+                type: string
+        '403':
+          description: Необходима регистрация
+          content:
+            text/plain:
+              schema:
+                type: string
+        '404':
+          description: Мастер не найден
+          content:
+            text/html:
+              schema:
+                type: string
+        '500':
+          description: Ошибка сервера
+          content:
+            text/plain:
+              schema:
+                type: string
+
+  /profile/enrollment/action:
+    post:
+      tags:
+        - Profile
+      summary: Редактировать заказ
+      description: Обновляет статус заказа (например, подтверждение или отклонение).
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                enrollmentId:
+                  type: integer
+                  example: 1
+                actionType:
+                  type: string
+                  enum: [approve, reject]
+                  example: "approve"
+                comment:
+                  type: string
+                  example: "Комментарий"
+      responses:
+        '200':
+          description: Заказ успешно обновлен
+          content:
+            text/plain:
+              schema:
+                type: string
+        '403':
+          description: Необходима регистрация
+          content:
+            text/plain:
+              schema:
+                type: string
+        '404':
+          description: Мастер не найден
+          content:
+            text/plain:
+              schema:
+                type: string
+        '500':
+          description: Ошибка сервера
+          content:
+            text/plain:
+              schema:
+                type: string
+
+  /profile/enrollment:
+    get:
+      tags:
+        - Profile
+      summary: Получить страницу заказов
+      description: Возвращает страницу с заказами мастера.
+      responses:
+        '200':
+          description: Успешный ответ
+          content:
+            text/html:
+              schema:
+                type: string
+        '403':
+          description: Необходима регистрация
+          content:
+            text/plain:
+              schema:
+                type: string
+        '404':
+          description: Мастер не найден
+          content:
+            text/html:
+              schema:
+                type: string
+        '500':
+          description: Ошибка сервера
+          content:
+            text/plain:
+              schema:
+                type: string
+
+  /profile/shedules:
+    get:
+      tags:
+        - Profile
+      summary: Получить страницу расписания
+      description: Возвращает страницу с расписанием мастера.
+      responses:
+        '200':
+          description: Успешный ответ
+          content:
+            text/html:
+              schema:
+                type: string
+        '403':
+          description: Необходима регистрация
+          content:
+            text/plain:
+              schema:
+                type: string
+        '404':
+          description: Мастер не найден
+          content:
+            text/html:
+              schema:
+                type: string
+        '500':
+          description: Ошибка сервера
+          content:
+            text/plain:
+              schema:
+                type: string
+
+  /profile/addService:
+    post:
+      tags:
+        - Profile
+      summary: Добавить услугу
+      description: Создает новую услугу для мастера.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  example: "Урок живописи"
+                type:
+                  type: integer
+                  example: 1
+                description:
+                  type: string
+                  example: "Профессиональный урок"
+                location:
+                  type: string
+                  example: "Москва"
+                otherLocation:
+                  type: string
+                  example: "Другое место"
+      responses:
+        '302':
+          description: Услуга успешно добавлена, перенаправление на страницу услуг
+          headers:
+            Location:
+              schema:
+                type: string
+              example: "/profile/services"
+        '400':
+          description: Некорректные данные
+          content:
+            text/html:
+              schema:
+                type: string
+        '403':
+          description: Необходима регистрация
+          content:
+            text/plain:
+              schema:
+                type: string
+        '404':
+          description: Мастер не найден
+          content:
+            text/plain:
+              schema:
+                type: string
+        '500':
+          description: Ошибка сервера
+          content:
+            text/plain:
+              schema:
+                type: string
+
+  /profile/editService:
+    post:
+      tags:
+        - Profile
+      summary: Редактировать услугу
+      description: Обновляет информацию об услуге.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                serviceId:
+                  type: integer
+                  example: 1
+                name:
+                  type: string
+                  example: "Урок живописи"
+                type:
+                  type: integer
+                  example: 1
+                description:
+                  type: string
+                  example: "Профессиональный урок"
+      responses:
+        '302':
+          description: Услуга успешно обновлена, перенаправление на страницу услуг
+          headers:
+            Location:
+              schema:
+                type: string
+              example: "/profile/services"
+        '400':
+          description: Некорректные данные
+          content:
+            text/html:
+              schema:
+                type: string
+        '403':
+          description: Необходима регистрация
+          content:
+            text/plain:
+              schema:
+                type: string
+        '404':
+          description: Мастер не найден
+          content:
+            text/plain:
+              schema:
+                type: string
+        '500':
+          description: Ошибка сервера
+          content:
+            text/plain:
+              schema:
+                type: string
+
+  /profile/gallery/upload:
+    post:
+      tags:
+        - Profile
+      summary: Загрузить фото в галерею
+      description: Загружает фотографию в галерею мастера.
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                photo:
+                  type: string
+                  format: binary
+      responses:
+        '200':
+          description: Фото успешно загружено
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+        '400':
+          description: Файл не загружен
+          content:
+            text/plain:
+              schema:
+                type: string
+        '403':
+          description: Необходима регистрация
+          content:
+            text/plain:
+              schema:
+                type: string
+        '404':
+          description: Мастер не найден
+          content:
+            text/plain:
+              schema:
+                type: string
+        '500':
+          description: Ошибка сервера
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: false
+                  message:
+                    type: string
+                    example: "Ошибка при загрузке фотографии"
+
+  /profile/deleteService/{id}:
+    delete:
+      tags:
+        - Profile
+      summary: Удалить услугу
+      description: Удаляет услугу по её ID.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Услуга успешно удалена
+          content:
+            text/plain:
+              schema:
+                type: string
+        '404':
+          description: Услуга не найдена
+          content:
+            text/plain:
+              schema:
+                type: string
+        '500':
+          description: Ошибка сервера
+          content:
+            text/plain:
+              schema:
+                type: string
+
+  /profile/gallery/delete/{galleryId}:
+    delete:
+      tags:
+        - Profile
+      summary: Удалить фото из галереи
+      description: Удаляет фотографию из галереи мастера по её ID.
+      parameters:
+        - name: galleryId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Фото успешно удалено
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+        '404':
+          description: Фото не найдено
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: false
+                  message:
+                    type: string
+                    example: "Фотография не найдена"
+        '500':
+          description: Ошибка сервера
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: false
+                  message:
+                    type: string
+                    example: "Ошибка при удалении фотографии"
+
+components:
+  schemas:
+    Master:
+      type: object
+      properties:
+        MasterId:
+          type: integer
+          example: 1
+        Name:
+          type: string
+          example: "Иван Иванов"
+        Description:
+          type: string
+          example: "Профессиональный мастер"
+        Photo:
+          type: string
+          format: byte
+          example: "base64 encoded image"
+
+    Type:
+      type: object
+      properties:
+        TypeId:
+          type: integer
+          example: 1
+        TypeName:
+          type: string
+          example: "Массаж"
+        Description:
+          type: string
+          example: "Расслабляющий массаж"
+
+    User:
+      type: object
+      properties:
+        ID:
+          type: integer
+          example: 1
+        Login:
+          type: string
+          example: "user123"
+        Email:
+          type: string
+          example: "user@example.com"
+        Role:
+          type: integer
+          example: 0
+
+    Schedule:
+      type: object
+      properties:
+        EnrollmentId:
+          type: integer
+          example: 1
+        ServiceId:
+          type: integer
+          example: 1
+        UserId:
+          type: integer
+          example: 1
+        Date:
+          type: string
+          format: date-time
+          example: "2023-10-15T14:30:00Z"
+        Time:
+          type: string
+          example: "14:30"
+        Duration:
+          type: integer
+          example: 60
+        Status:
+          type: string
+          example: "Pending"
+    Service:
+      type: object
+      properties:
+        ServiceId:
+          type: integer
+          example: 1
+        Name:
+          type: string
+          example: "Урок живописи"
+        Description:
+          type: string
+          example: "Профессиональный урок"
+        TypeId:
+          type: integer
+          example: 1
+        Location:
+          type: string
+          example: "Москва"
+        MasterId:
+          type: integer
+          example: 1
+          
+    Enrollment:
+      type: object
+      properties:
+        EnrollmentId:
+          type: integer
+          example: 1
+        ServiceId:
+          type: integer
+          example: 1
+        UserId:
+          type: integer
+          example: 1
+        Date:
+          type: string
+          format: date-time
+          example: "2023-10-15T14:30:00Z"
+        Time:
+          type: string
+          example: "14:30"
+        Duration:
+          type: integer
+          example: 60
+        Status:
+          type: string
+          example: "Pending"
+        Comments:
+          type: string
+          example: "Дополнительные пожелания"

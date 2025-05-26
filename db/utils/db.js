@@ -1,19 +1,18 @@
 const { initModels } = require('../models/initModels');
-const {  DataTypes } = require('sequelize');
-const  { Sequelize } = require("sequelize");
+const { Sequelize } = require("sequelize");
 
-
-const connection = new Sequelize('CourseW', 'sa', '1111', {
-    host: 'localhost',
+const connection = new Sequelize('CourseW', 'sa', 'P@ssw0rd!', {
+    host: 'db',
     dialect: 'mssql',
     port: 1433,
     pool: {
         min: 0,
         max: 10
-    }, dialectOptions: {
-      options: {
-        encrypt: false, // Попробуйте отключить шифрование, если используется локальная база
-      },
+    },
+    dialectOptions: {
+        options: {
+            encrypt: false,
+        },
     },
 });
 
@@ -21,14 +20,13 @@ const models = initModels(connection);
 
 module.exports = { models, connection };
 
-connection.sync({ alter: false }) // Use { force: true } to drop existing tables and re-create them , force: true
+connection.sync({ alter: false, force: false })
   .then(() => {
     console.log('Database synchronized successfully.');
   })
   .catch(err => {
     console.error('Unable to synchronize the database:', err);
   });
-
 
 connection
   .authenticate()

@@ -1,153 +1,242 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Курсы</title>
+    <title>Расписание</title>
     <style>
+        /* Общие стили */
         body {
             font-family: Arial, sans-serif;
-            background-color: #f5f5f5;
+            background-color: #f4f4f9;
             margin: 0;
-            padding: 0;
-        }
-
-        .admin-header {
-            background-color: #333;
-            color: #fff;
-            padding: 20px 0;
-            text-align: center;
-        }
-
-        #scheduler-container {
-            max-width: 800px;
-            margin: 20px auto;
-            padding: 20px;
-            background-color: #fff;
-            border-radius: 10px;
-            box-shadow: 0px 0px 20px rgba(0, 0, 0, 0.1);
+            color: #333;
         }
 
         h1 {
-            color: #333;
+            color: #444;
             text-align: center;
-        }
-
-        #status-select {
             margin-bottom: 20px;
-            padding: 10px;
-            font-size: 16px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
+        }
+
+        /* Стили для фильтров */
+        .filters {
             background-color: #fff;
-            width: 100%;
-            box-sizing: border-box;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
         }
 
-        .scheduler-card {
+        .filters label {
+            font-weight: bold;
+            margin-right: 5px;
+        }
+
+        .filters select, .filters input {
+            padding: 8px;
             border: 1px solid #ccc;
-            border-radius: 5px;
-            padding: 10px;
-            margin-bottom: 10px;
-            background-color: #f9f9f9;
+            border-radius: 4px;
+            font-size: 14px;
+            flex: 1;
+            min-width: 150px;
         }
 
-        .scheduler-card h2 {
+        .filters input {
+            flex: 2;
+        }
+
+        /* Стили для карточек */
+        #scheduleList {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .card {
+            background-color: #fff;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .card h2 {
             margin-top: 0;
-            color: #333;
-            font-size: 18px;
+            color: #555;
+            font-size: 24px;
         }
 
-        .scheduler-card p {
-            margin: 5px 0;
+        .card p {
+            margin: 8px 0;
+            font-size: 14px;
             color: #666;
         }
 
-        .scheduler-card button {
-            background-color: #007bff;
-            color: #fff;
-            border: none;
-            padding: 8px 16px;
-            border-radius: 5px;
-            cursor: pointer;
-            transition: background-color 0.3s;
+        .card strong {
+            color: #444;
         }
 
-        .scheduler-card button:hover {
-            background-color: #0056b3;
+        .card .user-info, .card .enrollment-info {
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid #eee;
+        }
+
+        .card .user-info h3, .card .enrollment-info h3 {
+            margin-bottom: 10px;
+            color: #555;
+            font-size: 18px;
+        }
+
+        /* Стили для времени и даты */
+        .approved-time, .formatted-date, .formatted-time {
+            font-weight: bold;
+            color: #007bff;
         }
     </style>
 </head>
-
 <body>
     {{> adminHeader}}
-    <div id="scheduler-container">
-        <h1>Страница с расписаниями</h1>
 
-        <select id="status-select">
-            <option value="all">Все</option>
-            <option value="0">Одобрено</option>
-            <option value="1">Отклонено</option>
-            <option value="2">Рассмотрение</option>
+    <!-- Фильтры и поиск -->
+    <div class="filters">
+        <label for="masterFilter">Фильтр по мастеру:</label>
+        <select id="masterFilter">
+            <option value="">Все мастера</option>
+            {{#each masters}}
+                <option value="{{MasterId}}">{{Name}} ({{Login}})</option>
+            {{/each}}
         </select>
 
-        {{#each schedule}}
-        <div class="scheduler-card" data-status="{{this.Status}}" data-schedule-id="{{this.SchedulerId}}">
-            <h2>{{this.SchedulerId}}</h2>
-            <p>TotalSpots: {{this.TotalSpots}}</p>
-            <p>AvailableSpots: {{this.AvailableSpots}}</p>
-            <p>DateClass: {{this.DateClass}}</p>
-            <p>Status: {{this.Status}}</p>
-            <p>Id мастер-класса: {{this.ClassId}}</p>
-            <p>Название мастер-класса: {{this.ClassName}}</p>
-            {{#if (eq this.Status 2)}}
-            <button onclick="changeStatus('{{this.SchedulerId}}', 0)">Одобрить</button>
-            <button onclick="changeStatus('{{this.SchedulerId}}', 1)">Отклонить</button>
-            {{/if}}
-            {{#if (eq this.Status 0)}}
-            <button onclick="changeStatus('{{this.SchedulerId}}', 1)">Отклонить</button>
-            {{/if}}
-            {{#if (eq this.Status 1)}}
-            <button onclick="changeStatus('{{this.SchedulerId}}', 0)">Одобрить</button>
-            {{/if}}
+        <label for="userFilter">Фильтр по пользователю:</label>
+        <select id="userFilter">
+            <option value="">Все пользователи</option>
+            {{#each users}}
+                <option value="{{ID}}">{{Login}} ({{Email}})</option>
+            {{/each}}
+        </select>
 
-        </div>
+        <label for="search">Поиск:</label>
+        <input type="text" id="search" placeholder="Введите текст для поиска...">
+    </div>
+
+    <!-- Список расписаний -->
+    <div id="scheduleList">
+        {{#each schedule}}
+            <div class="card" data-master-id="{{MasterId}}" data-user-id="{{User.ID}}" data-search="{{Name}} {{Enrollment.Comments}} {{Enrollment.Address}}">
+                <h2>{{Name}}</h2>
+                <p><strong>ID услуги:</strong> {{ServiceId}}</p>
+                <p><strong>Время утверждения:</strong> <span class="approved-time">{{ApprovedTime}}</span></p>
+                <p><strong>Мастер:</strong> {{MasterName}} ({{MasterLogin}})</p>
+                
+                <div class="user-info">
+                    <h3>Пользователь</h3>
+                    <p><strong>ID:</strong> {{User.ID}}</p>
+                    <p><strong>Логин:</strong> {{User.Login}}</p>
+                    <p><strong>Email:</strong> {{User.Email}}</p>
+                </div>
+
+                <div class="enrollment-info">
+                    <h3>Запись</h3>
+                    <p><strong>ID записи:</strong> {{Enrollment.EnrollmentId}}</p>
+                    <p><strong>Дата:</strong> <span class="formatted-date">{{this.Enrollment.Date}}</span></p>
+                    <p><strong>Время:</strong> <span class="formatted-time">{{this.Enrollment.Time}}</span></p>
+                    <p><strong>Длительность:</strong> {{Enrollment.Duration}}</p>
+                    <p><strong>Комментарии:</strong> {{Enrollment.Comments}}</p>
+                    <p><strong>Адрес:</strong> {{Enrollment.Address}}</p>
+                </div>
+            </div>
         {{/each}}
     </div>
 
     <script>
-        const statusSelect = document.getElementById('status-select');
-        const schedulerCards = document.querySelectorAll('.scheduler-card');
+        // Функция для фильтрации карточек
+        function filterSchedule() {
+            const masterFilter = document.getElementById('masterFilter').value;
+            const userFilter = document.getElementById('userFilter').value;
+            const searchQuery = document.getElementById('search').value.toLowerCase();
 
-        statusSelect.addEventListener('change', function () {
-            const selectedStatus = statusSelect.value;
+            const cards = document.querySelectorAll('#scheduleList .card');
 
-            schedulerCards.forEach(card => {
-                const cardStatus = card.dataset.status;
-                if (selectedStatus === 'all' || cardStatus === selectedStatus) {
+            cards.forEach(card => {
+                const masterId = card.getAttribute('data-master-id');
+                const userId = card.getAttribute('data-user-id');
+                const searchText = card.getAttribute('data-search').toLowerCase();
+
+                const matchesMaster = !masterFilter || masterId === masterFilter;
+                const matchesUser = !userFilter || userId === userFilter;
+                const matchesSearch = !searchQuery || searchText.includes(searchQuery);
+
+                if (matchesMaster && matchesUser && matchesSearch) {
                     card.style.display = 'block';
                 } else {
                     card.style.display = 'none';
                 }
             });
+        }
+
+        // Функция для форматирования времени с проверкой на некорректные значения
+        function formatDateTime(isoString) {
+            const date = new Date(isoString);
+            // Проверяем, является ли дата некорректной (например, 1970-01-01)
+            if (date.getFullYear() === 1970 && date.getMonth() === 0 && date.getDate() === 1) {
+                return ""; // Возвращаем пустую строку
+            }
+            return date.toLocaleString(); // Форматируем дату и время
+        }
+
+        // Применяем форматирование ко всем элементам с классом .approved-time
+        document.querySelectorAll('.approved-time').forEach(element => {
+            const isoTime = element.textContent;
+            element.textContent = formatDateTime(isoTime);
         });
 
-        function changeStatus(scheduleId, action) {
-            fetch(`/admin/updateSchedule/${scheduleId}/${action}`, {
-                method: 'PUT'
-            })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        location.reload();
-                    } else {
-                        alert('Ошибка при изменении статуса расписания.');
-                    }
-                });
-        }
+        // Назначение обработчиков событий
+        document.getElementById('masterFilter').addEventListener('change', filterSchedule);
+        document.getElementById('userFilter').addEventListener('change', filterSchedule);
+        document.getElementById('search').addEventListener('input', filterSchedule);
+
+        // Форматирование времени и даты при загрузке страницы
+        document.addEventListener("DOMContentLoaded", function () {
+            const timeElements = document.querySelectorAll('.formatted-time');
+            timeElements.forEach(function (timeElement) {
+                const timeString = timeElement.textContent.trim();
+                const date = new Date(timeString);
+                // Проверяем, является ли дата некорректной (например, 1970-01-01)
+                if (date.getFullYear() === 1970 && date.getMonth() === 0 && date.getDate() === 1) {
+                    timeElement.textContent = ""; // Убираем отображение
+                } else {
+                    const hours = date.getHours().toString().padStart(2, '0');
+                    const minutes = date.getMinutes().toString().padStart(2, '0');
+                    timeElement.textContent = `${hours}:${minutes}`;
+                }
+            });
+
+            const dateElements = document.querySelectorAll('.formatted-date');
+            dateElements.forEach(function (dateElement) {
+                const dateString = dateElement.textContent.trim();
+                const date = new Date(dateString);
+                // Проверяем, является ли дата некорректной (например, 1970-01-01)
+                if (date.getFullYear() === 1970 && date.getMonth() === 0 && date.getDate() === 1) {
+                    dateElement.textContent = ""; // Убираем отображение
+                } else {
+                    const day = date.getUTCDate().toString().padStart(2, '0');
+                    const month = (date.getUTCMonth() + 1).toString().padStart(2, '0');
+                    const year = date.getUTCFullYear();
+                    dateElement.textContent = `${day}.${month}.${year}`;
+                }
+            });
+        });
     </script>
-
 </body>
-
 </html>

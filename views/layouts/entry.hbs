@@ -4,113 +4,157 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Записи на курсы</title>
-    <!-- Подключаем стили, если необходимо -->
-    <link rel="stylesheet" href="styles.css">
-</head>
-
-<body>
+    <title>Записи</title>
     <style>
+        /* Общие стили */
         body {
-            font-family: Arial, sans-serif;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f8f9fa;
             margin: 0;
-            padding: 0;
-            background-color: #f2f2f2;
-        }
-
-        .container {
-            max-width: 800px;
-            margin: 20px auto;
             padding: 20px;
-            background-color: #fff;
-            border-radius: 5px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            color: #333;
         }
 
         h1 {
+            text-align: center;
+            font-size: 32px;
+            color: #444;
+            margin-bottom: 20px;
+        }
+
+        /* Контейнер для записей */
+        .entries {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        /* Карточка записи */
+        .entry-card {
+            background-color: #fff;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            width: calc(33.33% - 40px);
+            max-width: 300px;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .entry-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .entry-card h3 {
             margin-top: 0;
+            font-size: 20px;
+            color: #007bff;
         }
 
-        table {
-            width: 100%;
-            border-collapse: collapse;
+        .entry-card p {
+            margin: 10px 0;
+            font-size: 14px;
+            color: #666;
         }
 
-        table th,
-        table td {
-            padding: 10px;
-            text-align: left;
-            border-bottom: 1px solid #ddd;
+        .entry-card strong {
+            color: #444;
         }
 
-        table th {
-            background-color: #f2f2f2;
-            cursor: pointer;
+        /* Стили для статуса */
+        .status {
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-size: 14px;
+            font-weight: bold;
+            text-align: center;
+            margin-top: 10px;
         }
 
-        table th:hover {
-            background-color: #e2e2e2;
+        .status.pending {
+            background-color: #ffc107;
+            color: #333;
         }
 
-        table tbody tr:nth-child(even) {
-            background-color: #f9f9f9;
+        .status.approved {
+            background-color: #28a745;
+            color: #fff;
         }
 
-        table tbody tr:hover {
-            background-color: #e9e9e9;
+        .status.rejected {
+            background-color: #dc3545;
+            color: #fff;
+        }
+
+        /* Адаптивность */
+        @media (max-width: 768px) {
+            .entry-card {
+                width: calc(50% - 20px);
+            }
+        }
+
+        @media (max-width: 480px) {
+            .entry-card {
+                width: 100%;
+            }
         }
     </style>
- {{> adminHeader}}
+</head>
 
-    <div class="container">
-
-        <h1>Записи на курсы</h1>
-        {{#if enrollment.length}}
-        <table id="enrollment-table">
-            <thead>
-                <tr>
-                    <th data-sort-by="EnrollmentId">Идентификатор записи</th>
-                    <th data-sort-by="SpotsCount">Количество мест</th>
-                    <th data-sort-by="SchedulerId">Идентификатор расписания</th>
-                    <th data-sort-by="UserId">Идентификатор пользователя</th>
-                </tr>
-            </thead>
-            <tbody>
-                {{#each enrollment}}
-                <tr>
-                    <td>{{this.EnrollmentId}}</td>
-                    <td>{{this.SpotsCount}}</td>
-                    <td>{{this.SchedulerId}}</td>
-                    <td>{{this.UserId}}</td>
-                </tr>
-                {{/each}}
-            </tbody>
-        </table>
+<body>
+    {{> adminHeader}}
+    <h1>Записи на курсы</h1>
+    <div class="entries">
+        {{#each enrollment}}
+        <div class="entry-card">
+            <h3>{{ServiceName}}</h3>
+            <p><strong>Тип:</strong> {{Name}}</p>
+            <p><strong>Мастер:</strong> {{MasterName}}</p>
+            <p><strong>Дата:</strong> <span class="formatted-date">{{Date}}</span></p>
+            <p><strong>Время:</strong> <span class="formatted-time">{{Time}}</span></p>
+            <p><strong>Длительность:</strong> {{Duration}} часов</p>
+                                        {{#if Comments}}
+                    <p><strong>Комментрий от специалиста:</strong> {{Comments}}</p>
+                {{/if}}
+            <div class="status {{#if (eq Status 0)}}pending{{else if (eq Status 1)}}approved{{else}}rejected{{/if}}">
+                {{#if (eq Status 0)}}На рассмотрении{{else if (eq Status 1)}}Одобрено{{else}}Отклонено{{/if}}
+            </div>
+        </div>
         {{else}}
-        <p>Нет записей на курсы</p>
-        {{/if}}
+        <p>Записи на курсы не найдены.</p>
+        {{/each}}
     </div>
 
-    <!-- Подключаем скрипты, если необходимо -->
     <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            const table = document.getElementById('enrollment-table');
-            if (table) {
-                const headers = table.querySelectorAll('th[data-sort-by]');
-                headers.forEach(header => {
-                    header.addEventListener('click', () => {
-                        const sortBy = header.getAttribute('data-sort-by');
-                        const rows = Array.from(table.querySelectorAll('tbody tr'));
-                        const sortedRows = rows.sort((a, b) => {
-                            const aValue = a.querySelector(`td:nth-child(${header.cellIndex + 1})`).textContent;
-                            const bValue = b.querySelector(`td:nth-child(${header.cellIndex + 1})`).textContent;
-                            return aValue.localeCompare(bValue, undefined, { numeric: true, sensitivity: 'base' });
-                        });
-                        table.querySelector('tbody').innerHTML = '';
-                        sortedRows.forEach(row => table.querySelector('tbody').appendChild(row));
-                    });
-                });
-            }
+        // Функция для форматирования даты
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            if (isNaN(date)) return dateString; // Если дата невалидна, вернуть исходную строку
+            const day = date.getDate().toString().padStart(2, '0');
+            const month = (date.getMonth() + 1).toString().padStart(2, '0');
+            const year = date.getFullYear();
+            return `${day}.${month}.${year}`;
+        }
+
+        // Функция для форматирования времени
+        function formatTime(timeString) {
+            const date = new Date(timeString);
+            if (isNaN(date)) return timeString; // Если время невалидно, вернуть исходную строку
+            const hours = date.getHours().toString().padStart(2, '0');
+            const minutes = date.getMinutes().toString().padStart(2, '0');
+            return `${hours}:${minutes}`;
+        }
+
+        // Применяем форматирование ко всем датам и времени
+        document.querySelectorAll('.formatted-date').forEach(element => {
+            element.textContent = formatDate(element.textContent);
+        });
+
+        document.querySelectorAll('.formatted-time').forEach(element => {
+            element.textContent = formatTime(element.textContent);
         });
     </script>
 </body>

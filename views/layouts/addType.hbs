@@ -11,57 +11,66 @@
             font-family: Arial, sans-serif;
             margin: 0;
             padding: 0;
-            background-color: #f4f4f4;
+            background-color: #f8f9fa;
             color: #333;
         }
 
         .container {
             max-width: 600px;
             margin: 50px auto;
-            padding: 20px;
+            padding: 30px;
             background-color: #fff;
-            border-radius: 10px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
         }
 
         h1 {
             text-align: center;
-            margin-bottom: 20px;
-            color: #333;
+            margin-bottom: 30px;
+            color: #2c3e50;
+            font-size: 28px;
         }
 
         form {
             display: flex;
             flex-direction: column;
-            gap: 15px;
+            gap: 20px;
         }
 
         label {
             font-weight: bold;
-            color: #333;
+            color: #34495e;
+            font-size: 16px;
         }
 
         input[type="text"],
         textarea {
             width: 100%;
-            padding: 10px;
-            border-radius: 5px;
-            border: 1px solid #ccc;
+            padding: 12px;
+            border-radius: 8px;
+            border: 1px solid #ddd;
             box-sizing: border-box;
             font-size: 14px;
+            transition: border-color 0.3s ease;
+        }
+
+        input[type="text"]:focus,
+        textarea:focus {
+            border-color: #007bff;
+            outline: none;
         }
 
         textarea {
             resize: vertical;
-            min-height: 100px;
+            min-height: 120px;
         }
 
         button[type="submit"] {
-            padding: 10px 20px;
+            padding: 12px 24px;
             background-color: #007bff;
             color: #fff;
             border: none;
-            border-radius: 5px;
+            border-radius: 8px;
             cursor: pointer;
             font-size: 16px;
             transition: background-color 0.3s ease;
@@ -70,6 +79,49 @@
         button[type="submit"]:hover {
             background-color: #0056b3;
         }
+
+        .types-list {
+            margin-top: 40px;
+        }
+
+        .types-list h2 {
+            color: #34495e;
+            font-size: 24px;
+            margin-bottom: 20px;
+        }
+
+        .no-types {
+            text-align: center;
+            color: #888;
+            font-size: 18px;
+            margin-top: 20px;
+        }
+
+        .type-card {
+            background-color: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .type-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .type-card h3 {
+            margin: 0;
+            color: #2c3e50;
+            font-size: 20px;
+        }
+
+        .type-card p {
+            margin: 8px 0;
+            color: #555;
+            font-size: 14px;
+        }
     </style>
 </head>
 
@@ -77,15 +129,21 @@
     {{> adminHeader}}
 
     <div class="container">
-        <h1>Add Type</h1>
+        <h1>Добавить тип</h1>
+
+        <!-- Форма добавления нового типа -->
         <form action="/admin/addType" method="POST">
-            <label for="typeName">Type Name:</label>
-            <input type="text" id="typeName" name="TypeName" required>
-            <label for="description">Description:</label>
-            <textarea id="description" name="Description" rows="4" required></textarea>
-            <button type="submit">Add Type</button>
+            <div class="form-group">
+                <label for="typeName">Название типа:</label>
+                <input type="text" id="typeName" name="TypeName" required>
+            </div>
+            <div class="form-group">
+                <label for="description">Описание:</label>
+                <textarea id="description" name="Description" rows="4" required></textarea>
+            </div>
+            <button type="submit">Добавить</button>
         </form>
-    </div>
+
 </body>
 
 </html>

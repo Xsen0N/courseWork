@@ -32,7 +32,8 @@
         }
 
         .container input[type="text"],
-        .container input[type="password"] {
+        .container input[type="password"],
+        .container select {
             width: 100%;
             padding: 10px;
             border: 1px solid #ccc;
@@ -61,12 +62,12 @@
         .container button.btn-secondary:hover {
             background-color: #0056b3;
         }
-                a{
+
+        a {
             color: rgb(32, 36, 155);
             text-decoration: none;
-            text-align:right;
+            text-align: right;
             margin-bottom: 10px;
-            
         }
     </style>
 </head>
@@ -90,7 +91,16 @@
                 <input class="form-control mb-2" type="password" name="password" required />
             </label>
             <br />
-            <button class="btn btn-primary" type="submit">Вход</button>
+            <label>
+                Выберите профессию
+                <select class="form-control mb-2" name="professionId" required>
+                    {{#each professions}}
+                        <option value="{{this.ProfessionId}}">{{this.ProfessionName}}</option>
+                    {{/each}}
+                </select>
+            </label>
+            <br />
+            <button class="btn btn-primary" type="submit">Зарегистрироваться</button>
             <button class="btn btn-secondary ms-3" type="button" onclick="location.href = '/auth/loginMaster'">Уже есть аккаунт?</button>
         </form>
     </div>

@@ -12,21 +12,15 @@ profileRouter
     .get('/getService/:serviceId', profileController.getService)
     .get("/gallery", profileController.getGallery)
     .post("/enrollment/action", profileController.editOrder)
+    .put("/changeService/:id/status", profileController.resubmitService)
     .get("/enrollment", profileController.getOrderPage)
     .get("/shedules", profileController.getShedulePage)
-
     .post("/addService", profileController.addService)
-    .post("/editService", profileController.editOrder)
-    .post("/editOrder", profileController.editService)
+    .post("/addCriteria", profileController.addCriteria)
+    .post("/editService", profileController.editService)
+    .post("/editOrder", profileController.editOrder)
     .post('/gallery/upload', upload.single('photo'), profileController.uploadPhotoForGallery.bind(profileController))
     .delete('/deleteService/:id', profileController.deleteService)
-    .delete('/gallery/delete/:galleryId', profileController.deleteGallery )
-
-    .get("/addSchedule", profileController.getSchedulePage)
-    // .post("/addSchedule", profileController.addSchedule)
-    // .delete('/deleteSchedule/:id', profileController.deleteSchedule)
-
-    .get("/addSchedule", profileController.getSchedulePage)
-    ;
+    .delete('/gallery/delete/:galleryId', profileController.deleteGallery );
 
 module.exports = profileRouter;

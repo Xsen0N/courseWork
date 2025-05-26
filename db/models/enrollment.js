@@ -17,12 +17,12 @@ module.exports = function(sequelize, DataTypes) {
         type: DataTypes.INTEGER,
         allowNull: false
       },
-      Date: {  // Дата (без времени)
-        type: DataTypes.DATEONLY,  // Используем DATEONLY для хранения только даты
+      Date: {  
+        type: DataTypes.DATEONLY,  
         allowNull: false
       },
-      Time: {  // Время начала
-        type: DataTypes.TIME,  // Хранится в формате времени
+      Time: {  
+        type: DataTypes.TIME,  
         allowNull: false
       },
       Duration: {  
@@ -30,11 +30,11 @@ module.exports = function(sequelize, DataTypes) {
         allowNull: false
       },
       Address:{
-        type: DataTypes.STRING(255),  
+        type: DataTypes.STRING(1000),  
         allowNull: false
       },
       Comments: { 
-        type: DataTypes.STRING(255),  
+        type: DataTypes.STRING(1000),  
         allowNull: true
       }
     }, {

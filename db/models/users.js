@@ -10,7 +10,7 @@ module.exports = function(sequelize, DataTypes) {
           allowNull: false
       },
       Email: {
-          type: DataTypes.STRING, // Предположим, что электронная почта должна быть строкой
+          type: DataTypes.STRING, 
           allowNull: false
       },
       Role: {

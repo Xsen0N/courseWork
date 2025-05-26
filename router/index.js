@@ -8,16 +8,20 @@ const authRouter = require("./authRouter");
 const typesRouter = require("./typesRouter");
 const adminRouter = require("./adminRouter");
 const profileRouter = require("./profileRouter");
+const requestRouter = require("./requestRouter");
+const notificationRouter = require("./notificationRouter");
 
 
 router.use("/", homeRouter);
+router.use("/request", requestRouter);
 router.use("/auth", authRouter);
 router.use("/masters", mastersRouter);
 router.use("/admin", adminRouter);
 router.use("/enrollment", enrollmentRouter);
 router.use("/services", serviceRouter);
 router.use("/types", typesRouter);
-router.use("/profile", profileRouter)
+router.use("/profile", profileRouter);
+router.use("/notifications", notificationRouter);
 
 
 module.exports = router;

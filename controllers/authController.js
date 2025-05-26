@@ -8,16 +8,29 @@ class AuthController {
     }
 
     getRegisterPage = (req, res, next) => {
-        res.render("./layouts/registration.hbs", { layout: "registration.hbs" });
+        res.render("./layouts/registrationAdmin.hbs", { layout: "registration.hbs" });
+    }
+
+    getRegisterAdminPage = (req, res, next) => {
+        res.render("./layouts/registrationAdmin.hbs", { layout: "registrationAdmin.hbs" });
     }
 
     getLoginMasterPage(req, res) {
         res.render("./layouts/loginMaster.hbs", { layout: "loginMaster.hbs" });
     }
 
-    getRegisterMasterPage = (req, res, next) => {
-        res.render("./layouts/registerMaster.hbs", { layout: "registerMaster.hbs" });
-    }
+    getRegisterMasterPage = async (req, res, next) => {
+        try {
+            const professions = await models.professions.findAll({ raw: true });
+            res.status(200).render("./layouts/registerMaster.hbs", {
+                layout: "registerMaster.hbs",
+                professions: professions 
+            });
+        } catch (error) {
+            console.error('Ошибка при получении списка профессий:', error);
+            res.status(500).send('Произошла ошибка при загрузке страницы регистрации');
+        }
+    };
 
     logout(req, res) {
         req.session.destroy();
@@ -97,6 +110,47 @@ class AuthController {
         res.redirect('/auth/login');
     }
 
+    async registerAdmin(req, res) {
+        const { username, email, password } = req.body;
+        
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(email)) {
+            req.session.previousUrl = req.headers.referer;
+            return res.render('./layouts/error.hbs', {layout: "error.hbs", errorMessage: 'Некорректный адрес электронной почты' });
+        }
+        
+        const hashedPassword = bcrypt.hashSync(password, 10);   
+        const existingUser = await models.users.findOne({
+            where: {
+                Email: email
+            }
+        });
+
+        if (existingUser) {
+            req.session.previousUrl = req.headers.referer;
+            return res.render('./layouts/error.hbs', {layout: "error.hbs", errorMessage: 'Этот адрес электронной почты уже используется' });
+        }
+
+        const existingUserLogin = await models.users.findOne({
+            where: {
+                Login: username
+            }
+        });
+        
+        if (existingUserLogin) {
+            req.session.previousUrl = req.headers.referer;
+            return res.render('./layouts/error.hbs', {layout: "error.hbs", errorMessage: 'Этот логин уже занят' });
+        }
+
+        await models.users.create({
+            Login: username,
+            Email: email,
+            Password: hashedPassword,
+            Role: 1
+        });       
+        res.redirect('/auth/login');
+    }
+
     async loginMaster(req, res) {
         const { username, password } = req.body;
         
@@ -108,8 +162,6 @@ class AuthController {
             }
             if (bcrypt.compareSync(password, user.Password)) {                
                 req.session.masterId = user.MasterId;
-                console.log('Мастер  session id: '+req.session.masterId )
-                console.log('Поль  session id: '+req.session.userId )
                 res.redirect('/profile');
             } else {
                 req.session.previousUrl = req.headers.referer;
@@ -122,7 +174,7 @@ class AuthController {
     }
 
     async registerMaster(req, res) {
-        const { username, realName, password } = req.body;
+        const { username, realName, password, professionId  } = req.body;
             
         const hashedPassword = bcrypt.hashSync(password, 10);   
         const existingUser = await models.masters.findOne({
@@ -138,7 +190,8 @@ class AuthController {
         await models.masters.create({
             Login: username,
             Name: realName,
-            Password: hashedPassword
+            Password: hashedPassword,
+            ProfessionId: professionId 
         });       
         res.redirect('/auth/loginMaster');
     }

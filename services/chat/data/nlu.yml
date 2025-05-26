@@ -1,0 +1,7 @@
+entities:
+  - service_type  # Тип услуги (например, "официант", "ведущий")
+  - location      # Локация из Services.Location
+  - budget        # Максимальный бюджет пользователя
+
+intents:
+  - hire_specialist: "Ищу {service_type} в {location} до {budget} рублей"

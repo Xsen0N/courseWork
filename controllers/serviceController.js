@@ -3,18 +3,22 @@ const { models } = require('../db/utils/db');
 
 class ServiceController {
     async getAllServices(req, res) {
+        const service = await models.services.findAll();
+
         const servicesDetailes = await models.services.findAll({
             include: [
                 {
                     model: models.masters,
-                    attributes: ['Name', 'PriceForHour'], // Указываем, что нам нужно только имя преподавателя
-                    required: true // Если преподаватель не указан, классы без преподавателя не будут возвращены
+                    attributes: ['Name', 'PriceForHour'], 
+                    required: true
                 },
                 {
                     model: models.types,
-                    attributes: ['TypeName'] // Указываем, что нам нужно только название типа
+                    attributes: ['TypeName']
                 }
-            ],
+            ],where: {
+                status: 1
+            },
             raw: true
         });
         const services = servicesDetailes.map(courseDetail => ({

@@ -6,11 +6,11 @@ module.exports = function(sequelize, DataTypes) {
           autoIncrement: true 
       },
       TypeName: {
-          type: DataTypes.STRING(100),
+          type: DataTypes.STRING(1000),
           allowNull: false
       },
       Description: {
-          type: DataTypes.STRING(255), 
+          type: DataTypes.STRING(1000), 
           allowNull: true 
       }
   }, {

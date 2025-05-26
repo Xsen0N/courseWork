@@ -129,7 +129,7 @@
         <input type="text" id="search" placeholder="Search service" oninput="filterClasses()">
 
         <select id="type" onchange="filterClasses()">
-            <option value="All">All Types</option>
+            <option value="All">Все типы</option>
             {{#each types}}
             <option value="{{TypeName}}">{{TypeName}}</option>
             {{/each}}
@@ -144,10 +144,10 @@
                 <p><strong>Вид мероприятия:</strong> {{TypeName}}</p>
                 <p><strong>Цена за час:</strong> {{PriceForHour}} BYN</p>
                 <p><strong>Локация:</strong> {{Location}}</p>
-                <button class="details-button" data-class-id="{{ServiceId}}">Записаться!</button>
+                <button class="details-button" data-class-id="{{ServiceId}}">Обратиться!</button>
             </div>
             {{else}}
-            <p>No services found.</p>
+            <p>Ничено нет.</p>
             {{/each}}
         </div>
     </div>

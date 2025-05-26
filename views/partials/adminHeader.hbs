@@ -1,64 +1,156 @@
 <!DOCTYPE html>
-<html lang="en">
-
+<html lang="ru">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Panel</title>
     <style>
-        /* Стили для хедера */
-        header {
-            background-color: #333;
-            color: #fff;
-            padding: 20px 0;
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Arial', sans-serif;
         }
 
-        /* Стили для навигации */
-        nav ul {
-            list-style-type: none;
-            padding: 0;
+        /* Сайдбар с профилем */
+        .sidebar {
+            position: fixed;
+            left: 0;
+            top: 0;
+            height: 100vh;
+            width: 250px;
+            background: #2c3e50;
+            padding: 20px;
+            color: white;
+            transition: 0.3s;
+        }
+
+        .profile {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .profile-img {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            object-fit: cover;
+            margin-bottom: 15px;
+            border: 3px solid #3498db;
+        }
+
+        /* Основной контент */
+        .main-content {
+            margin-left: 250px;
+            padding: 20px;
+            transition: 0.3s;
+        }
+
+        /* Адаптивное меню */
+        .nav-menu {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .nav-menu a {
+            color: #ecf0f1;
+            text-decoration: none;
+            padding: 12px 15px;
+            border-radius: 5px;
+            transition: 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .nav-menu a:hover {
+            background: #34495e;
+            transform: translateX(5px);
+        }
+
+        .nav-menu a i {
+            width: 25px;
             text-align: center;
         }
 
-        nav ul li {
-            display: inline-block;
-            margin: 0 10px;
+        /* Мобильная версия */
+        .menu-toggle {
+            display: none;
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 100;
+            font-size: 24px;
+            color: #2c3e50;
+            cursor: pointer;
         }
 
-        nav ul li a {
-            color: #fff;
-            text-decoration: none;
-            padding: 10px 15px;
-            border-radius: 5px;
-            transition: background-color 0.3s ease;
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
+            }
+
+            .main-content {
+                margin-left: 0;
+            }
+
+            .menu-toggle {
+                display: block;
+            }
+
+            .sidebar.active {
+                transform: translateX(0);
+            }
         }
 
-        nav ul li a:hover {
-            background-color: #555;
-        }
-
-        /* Стили для текста в ссылках */
-        nav ul li a {
-            font-weight: bold; /* Жирный шрифт ывв*/
-            text-transform: uppercase; /* Преобразование текста в верхний регистр */
-            letter-spacing: 1px; /* Расстояние между символами */
+        /* Стили для иконок */
+        .fa-solid {
+            font-size: 18px;
         }
     </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
-
 <body>
-    <header>
-        <nav>
-            <ul>
-                <li><a href="/admin/masters">Специалисты</a></li>
-                <li><a href="/admin/types">Типы мероприятий</a></li>
-                <li><a href="/admin/scheduler">Расписание специяалистов</a></li> 
-                <li><a href="/admin/enrollment">Заявкм на услуги</a></li>
-                <li><a href="/admin/users">Пользователи</a></li>
-                <li><a href="/admin">Услуги</a></li>
-                <li><a href="/auth/logout">Выход</a></li>
-            </ul>
-        </nav>
-    </header>
-</body>
+    {{> notifications}}
+    <div class="sidebar">
 
+        <nav class="nav-menu">
+            <a href="/admin/masters"><i class="fa-solid fa-users"></i>Специалисты</a>
+            <a href="/admin/types"><i class="fa-solid fa-calendar"></i>Типы мероприятий</a>
+            {{!-- <a href="/admin/scheduler"><i class="fa-solid fa-clock"></i>Расписания</a> --}}
+            {{!-- <a href="/admin/services"><i class="fa-solid fa-clock"></i>Сервис</a> --}}
+            <a href="/admin/enrollment"><i class="fa-solid fa-list"></i>Заявки</a>
+            <a href="/admin/users"><i class="fa-solid fa-user"></i>Пользователи</a>
+            <a href="/admin"><i class="fa-solid fa-briefcase"></i>Услуги</a>
+            <a href="/admin/criterias"><i class="fa-solid fa-check"></i>Критерии</a>
+            <a href="/admin/professions"><i class="fa-solid fa-graduation-cap"></i>Специализации</a>
+            <a href="/auth/logout"><i class="fa-solid fa-right-from-bracket"></i>Выход</a>
+        </nav>
+    </div>
+
+    <!-- Кнопка меню для мобильных -->
+    <div class="menu-toggle"><i class="fa-solid fa-bars"></i></div>
+
+    <!-- Основной контент -->
+    <div class="main-content">
+        <!-- Здесь будет основной контент страницы -->
+    </div>
+
+    <script>
+        // Переключение меню для мобильных
+        document.querySelector('.menu-toggle').addEventListener('click', () => {
+            document.querySelector('.sidebar').classList.toggle('active');
+        });
+
+        // Скрытие меню при клике вне его области
+        document.addEventListener('click', (e) => {
+            if (window.innerWidth <= 768 && 
+                !e.target.closest('.sidebar') && 
+                !e.target.closest('.menu-toggle')) {
+                document.querySelector('.sidebar').classList.remove('active');
+            }
+        });
+    </script>
+</body>
 </html>

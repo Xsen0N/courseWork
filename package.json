@@ -1,7 +1,7 @@
 {
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node app.js",
+    "start": "node main.js",
     "dev": "npx nodemon ./main.js --ext js,handlebars,css --watch ./"
   },
   "dependencies": {
@@ -22,7 +22,10 @@
     "redis": "^4.6.13",
     "sequelize": "^6.37.5",
     "socket.io": "^4.7.5",
-    "tedious": "^18.6.1"
+    "swagger-jsdoc": "^6.2.8",
+    "swagger-ui-express": "^5.0.1",
+    "tedious": "^18.6.1",
+    "yamljs": "^0.3.0"
   },
   "devDependencies": {
     "connect-livereload": "^0.6.1",
