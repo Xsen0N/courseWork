@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Управление услугами</title>
+<style>
+    body {
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        background-color: #f8f9fa;
+        margin: 0;
+        padding: 0;
+        color: #333;
+    }
+
+    h1, h2 {
+        text-align: center;
+        margin: 20px 0;
+    }
+
+    h1 {
+        font-size: 32px;
+        color: #444;
+    }
+
+    h2 {
+        font-size: 24px;
+        color: #555;
+        margin-top: 40px;
+        padding-bottom: 10px;
+        border-bottom: 2px solid #eee;
+    }
+
+    .services-container {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        padding: 20px;
+        gap: 20px;
+        max-width: 1200px;
+        margin: 0 auto;
+    }
+
+    .service-card {
+        background-color: #fff;
+        border-radius: 12px;
+        box-shadow: 0 6px 18px rgba(0, 0, 0, 0.06);
+        padding: 20px;
+        width: 100%;
+        max-width: 320px;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        transition: all 0.3s ease;
+    }
+
+    .service-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 8px 22px rgba(0, 0, 0, 0.1);
+    }
+
+    .service-card h3 {
+        margin-top: 0;
+        font-size: 20px;
+        color: #007bff;
+    }
+
+    .service-card p {
+        margin: 8px 0;
+        font-size: 14px;
+        color: #555;
+    }
+
+    .service-card strong {
+        color: #333;
+    }
+
+    .status-pending {
+        border-left: 5px solid #ffc107;
+    }
+
+    .status-approved {
+        border-left: 5px solid #28a745;
+    }
+
+    .status-rejected {
+        border-left: 5px solid #dc3545;
+    }
+
+    .action-buttons {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 15px;
+    }
+
+    .btn {
+        flex: 1 1 calc(50% - 10px);
+        padding: 10px;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 14px;
+        font-weight: 600;
+        transition: background-color 0.25s ease, transform 0.1s ease;
+        text-align: center;
+    }
+
+    .btn:hover {
+        transform: scale(1.02);
+    }
+
+    .btn-approve {
+        background-color: #28a745;
+        color: white;
+    }
+
+    .btn-approve:hover {
+        background-color: #218838;
+    }
+
+    .btn-reject {
+        background-color: #dc3545;
+        color: white;
+    }
+
+    .btn-reject:hover {
+        background-color: #c82333;
+    }
+
+    .btn-pending {
+        background-color: #ffc107;
+        color: #212529;
+    }
+
+    .btn-pending:hover {
+        background-color: #e0a800;
+    }
+
+    .btn-delete {
+        background-color: #6c757d;
+        color: white;
+    }
+
+    .btn-delete:hover {
+        background-color: #5a6268;
+    }
+
+    .no-services {
+        text-align: center;
+        font-size: 18px;
+        color: #777;
+        margin: 50px 0;
+        width: 100%;
+    }
+
+    @media (max-width: 768px) {
+        .service-card {
+            max-width: 100%;
+        }
+
+        .btn {
+            flex: 1 1 100%;
+        }
+    }
+</style>
+</head>
+
+<body>
+    {{> adminHeader}}
+    <h1>Управление услугами</h1>
+
+    <!-- На рассмотрении -->
+    <h2>На рассмотрении</h2>
+    <div class="services-container">
+        {{#each pendingServices}}
+        <div class="service-card status-pending">
+            <h3>{{Name}}</h3>
+            <p>{{Description}}</p>
+            <p><strong>Мастер:</strong> {{Master}}</p>
+            <p><strong>Тип:</strong> {{TypeName}}</p>
+            <p><strong>Локация:</strong> {{Location}}</p>
+            <div class="action-buttons">
+                <button class="btn btn-approve" data-service-id="{{ServiceId}}">Одобрить</button>
+                <button class="btn btn-reject" data-service-id="{{ServiceId}}">Отклонить</button>
+                <button class="btn btn-delete" data-service-id="{{ServiceId}}">Удалить</button>
+            </div>
+        </div>
+        {{else}}
+        <p class="no-services">Нет услуг на рассмотрении</p>
+        {{/each}}
+    </div>
+
+    <!-- Одобренные -->
+    <h2>Одобренные услуги</h2>
+    <div class="services-container">
+        {{#each approvedServices}}
+        <div class="service-card status-approved">
+            <h3>{{Name}}</h3>
+            <p>{{Description}}</p>
+            <p><strong>Мастер:</strong> {{Master}}</p>
+            <p><strong>Тип:</strong> {{TypeName}}</p>
+            <p><strong>Локация:</strong> {{Location}}</p>
+            <div class="action-buttons">
+                <button class="btn btn-pending" data-service-id="{{ServiceId}}">На рассмотрение</button>
+                <button class="btn btn-delete" data-service-id="{{ServiceId}}">Удалить</button>
+            </div>
+        </div>
+        {{else}}
+        <p class="no-services">Нет одобренных услуг</p>
+        {{/each}}
+    </div>
+
+    <!-- Отклоненные -->
+    <h2>Отклоненные услуги</h2>
+    <div class="services-container">
+        {{#each rejectedServices}}
+        <div class="service-card status-rejected">
+            <h3>{{Name}}</h3>
+            <p>{{Description}}</p>
+            <p><strong>Мастер:</strong> {{Master}}</p>
+            <p><strong>Тип:</strong> {{TypeName}}</p>
+            <p><strong>Локация:</strong> {{Location}}</p>
+            <div class="action-buttons">
+                <button class="btn btn-pending" data-service-id="{{ServiceId}}">На рассмотрение</button>
+                <button class="btn btn-delete" data-service-id="{{ServiceId}}">Удалить</button>
+            </div>
+        </div>
+        {{else}}
+        <p class="no-services">Нет отклоненных услуг</p>
+        {{/each}}
+    </div>
+
+    <script>
+        // Функция для обновления статуса
+        async function updateServiceStatus(serviceId, newStatus) {
+            try {
+                const response = await fetch(`/admin/services/${serviceId}/status`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ status: newStatus })
+                });
+                
+                if (response.ok) {
+                    window.location.reload();
+                } else {
+                    console.error('Ошибка при обновлении статуса');
+                    alert('Произошла ошибка при обновлении статуса');
+                }
+            } catch (error) {
+                console.error('Ошибка:', error);
+                alert('Произошла ошибка при обновлении статуса');
+            }
+        }
+
+        // Функция для удаления услуги
+        async function deleteService(serviceId) {
+            try {
+                if (confirm('Вы уверены, что хотите удалить эту услугу?')) {
+                    const response = await fetch(`/admin/deleteService/${serviceId}`, {
+                        method: 'DELETE'
+                    });
+                    if (response.ok) {
+                        window.location.reload();
+                    } else {
+                        console.error('Ошибка при удалении услуги');
+                    }
+                }
+            } catch (error) {
+                console.error('Ошибка при удалении услуги:', error);
+            }
+        }
+
+        // Обработчики событий
+        document.querySelectorAll('.btn-approve').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const serviceId = btn.dataset.serviceId;
+                updateServiceStatus(serviceId, 1); // 1 - одобрено
+            });
+        });
+
+        document.querySelectorAll('.btn-reject').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const serviceId = btn.dataset.serviceId;
+                updateServiceStatus(serviceId, 2); // 2 - отклонено
+            });
+        });
+
+        document.querySelectorAll('.btn-pending').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const serviceId = btn.dataset.serviceId;
+                updateServiceStatus(serviceId, 0); // 0 - на рассмотрении
+            });
+        });
+
+        document.querySelectorAll('.btn-delete').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const serviceId = btn.dataset.serviceId;
+                deleteService(serviceId);
+            });
+        });
+    </script>
+</body>
+</html>

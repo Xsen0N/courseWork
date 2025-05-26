@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Добавить класс</title>
+</head>
+<body>
+    <h1>Добавить новый класс</h1>
+    <form action="/admin/addClass" method="POST">
+        <label for="name">Название класса:</label>
+        <input type="text" id="name" name="name" required><br><br>
+
+        <label for="description">Описание:</label>
+        <input type="text" id="description" name="description" required><br><br>
+
+        <label for="artType">Тип деятельности:</label>
+        <select id="artType" name="artType">
+            {{#each artTypes}}
+            <option value="{{this.id}}">{{this.name}}</option>
+            {{/each}}
+        </select><br><br>
+
+        <button type="submit">Добавить класс</button>
+    </form>
+</body>
+</html>

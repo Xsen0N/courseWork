@@ -1,0 +1,144 @@
+<!-- Кнопка/иконка уведомлений -->
+<div class="notification-icon" id="notificationIcon">
+    🔔
+    <span class="badge" id="notificationBadge">0</span>
+</div>
+
+<!-- Попап с уведомлениями -->
+<div class="notifications-popup" id="notificationsPopup" style="display: none;">
+    <div class="notifications-header">
+        <h3>Уведомления</h3>
+        <button id="markAllAsRead">Прочитать все</button>
+    </div>
+    <div class="notifications-list" id="notificationsList">
+        <!-- Уведомления будут здесь -->
+    </div>
+</div>
+
+<style>
+.notification-icon {
+    position: relative;
+    cursor: pointer;
+    font-size: 24px;
+}
+
+.badge {
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    background: red;
+    color: white;
+    border-radius: 50%;
+    padding: 2px 6px;
+    font-size: 12px;
+}
+
+.notifications-popup {
+    position: absolute;
+    top: 50px;
+    right: 20px;
+    width: 350px;
+    background: white;
+    border: 1px solid #ddd;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    z-index: 1000;
+    max-height: 500px;
+    overflow-y: auto;
+}
+
+.notification-item {
+    padding: 10px;
+    border-bottom: 1px solid #eee;
+}
+
+.notification-item.unread {
+    background: #f8f9fa;
+}
+
+.notification-item:hover {
+    background: #f1f1f1;
+}
+</style>
+
+<script>
+// Загрузка уведомлений
+async function loadNotifications() {
+    try {
+        const response = await fetch('/notifications');
+        if (!response.ok) throw new Error('Ошибка загрузки');
+        const notifications = await response.json();
+        
+        const list = document.getElementById('notificationsList');
+        list.innerHTML = '';
+        
+        let unreadCount = 0;
+        
+        notifications.forEach(notif => {
+            const notifElement = document.createElement('div');
+            notifElement.className = `notification-item ${notif.isRead ? '' : 'unread'}`;
+            notifElement.innerHTML = `
+                <p>${notif.message}</p>
+                <small>${new Date(notif.createdAt).toLocaleString()}</small>
+                ${notif.isRead ? '' : `<button class="mark-read" data-id="${notif.id}">Прочитать</button>`}
+            `;
+            
+            list.appendChild(notifElement);
+            if (!notif.isRead) unreadCount++;
+        });
+        
+        document.getElementById('notificationBadge').textContent = unreadCount;
+    } catch (error) {
+        console.error('Ошибка загрузки уведомлений:', error);
+    }
+}
+
+// Обработчики событий
+document.getElementById('notificationIcon').addEventListener('click', function() {
+    const popup = document.getElementById('notificationsPopup');
+    popup.style.display = popup.style.display === 'none' ? 'block' : 'none';
+    if (popup.style.display === 'block') loadNotifications();
+});
+
+// Исправленный обработчик для кнопок
+document.getElementById('notificationsList').addEventListener('click', function(e) {
+    if (e.target.classList.contains('mark-read')) {
+        const notificationId = e.target.dataset.id;
+        markAsRead(notificationId);
+    }
+});
+
+document.getElementById('markAllAsRead').addEventListener('click', markAllAsRead);
+
+// Пометить как прочитанное
+async function markAsRead(notificationId) {
+    try {
+        const response = await fetch(`/notifications/${notificationId}/read`, {
+            method: 'PUT'
+        });
+        if (!response.ok) throw new Error('Ошибка сервера');
+        loadNotifications();
+    } catch (error) {
+        console.error('Ошибка:', error);
+        alert('Не удалось обновить статус уведомления');
+    }
+}
+
+async function markAllAsRead() {
+    try {
+        const response = await fetch('/notifications/mark-all-read', {
+            method: 'PUT'
+        });
+        if (!response.ok) throw new Error('Ошибка сервера');
+        loadNotifications();
+    } catch (error) {
+        console.error('Ошибка:', error);
+        alert('Не удалось обновить статус уведомлений');
+    }
+}
+
+// Инициализация
+document.addEventListener('DOMContentLoaded', function() {
+    loadNotifications();
+    setInterval(loadNotifications, 30000);
+});
+</script>

@@ -1,0 +1,15 @@
+forms:
+  hire_form:
+    required_slots:
+      - service_type
+      - location
+      - budget
+      - event_type
+      - criteria
+
+responses:
+  utter_ask_event_type:
+    - text: "Какой тип мероприятия? Например: свадьба, корпоратив, детский праздник."
+
+  utter_ask_criteria:
+    - text: "Укажите важные критерии (например: 'свой инвентарь', 'опыт 5+ лет'):"

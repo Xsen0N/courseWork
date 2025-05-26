@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Мои услуги</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f8f9fa;
+            color: #333;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 30px;
+            color: #2c3e50;
+            font-size: 28px;
+        }
+
+        h2 {
+            color: #34495e;
+            font-size: 24px;
+            margin-bottom: 20px;
+        }
+
+        form {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        label {
+            font-weight: bold;
+            color: #34495e;
+            font-size: 16px;
+        }
+
+        input[type="text"],
+        textarea,
+        select {
+            width: 100%;
+            padding: 12px;
+            border-radius: 8px;
+            border: 1px solid #ddd;
+            box-sizing: border-box;
+            font-size: 14px;
+            transition: border-color 0.3s ease;
+        }
+
+        input[type="text"]:focus,
+        textarea:focus,
+        select:focus {
+            border-color: #007bff;
+            outline: none;
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 120px;
+        }
+
+        button[type="submit"] {
+            padding: 12px 24px;
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s ease;
+        }
+
+        button[type="submit"]:hover {
+            background-color: #0056b3;
+        }
+
+        .services-list {
+            margin-top: 40px;
+        }
+
+        .service-card {
+            background-color: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .service-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .service-card h3 {
+            margin: 0;
+            color: #2c3e50;
+            font-size: 20px;
+        }
+
+        .service-card p {
+            margin: 8px 0;
+            color: #555;
+            font-size: 14px;
+        }
+
+        .service-card button {
+            padding: 8px 16px;
+            margin-right: 10px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background-color 0.3s ease;
+        }
+
+        .service-card .edit-btn {
+            background-color: #28a745;
+            color: #fff;
+        }
+
+        .service-card .edit-btn:hover {
+            background-color: #218838;
+        }
+
+        .service-card .delete-btn {
+            background-color: #dc3545;
+            color: #fff;
+        }
+
+        .service-card .delete-btn:hover {
+            background-color: #c82333;
+        }
+
+        /* Модальное окно */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background-color: #fff;
+            padding: 30px;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 500px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+            position: relative;
+        }
+
+        .modal-content .close {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            font-size: 24px;
+            cursor: pointer;
+            color: #888;
+            transition: color 0.3s ease;
+        }
+
+        .modal-content .close:hover {
+            color: #333;
+        }
+
+        .modal-content h2 {
+            margin-top: 0;
+            color: #2c3e50;
+        }
+
+        /* Стили для выбора критериев */
+        .criteria-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin: 10px 0;
+        }
+
+        .criteria-item {
+            display: flex;
+            align-items: center;
+            background-color: #f9f9f9;
+            padding: 8px 12px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+            cursor: pointer;
+        }
+
+        .criteria-item:hover {
+            background-color: #e9e9e9;
+        }
+
+        .criteria-item input {
+            margin-right: 8px;
+        }
+        .status-badge {
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.status-pending {
+  background-color: #fff3cd;
+  color: #856404;
+  border: 1px solid #ffeeba;
+}
+
+.status-approved {
+  background-color: #d4edda;
+  color: #155724;
+  border: 1px solid #c3e6cb;
+}
+
+.status-rejected {
+  background-color: #f8d7da;
+  color: #721c24;
+  border: 1px solid #f5c6cb;
+}
+
+.status-draft {
+  background-color: #e2e3e5;
+  color: #383d41;
+  border: 1px solid #d6d8db;
+}
+
+.resubmit-btn {
+  background-color: #17a2b8;
+  color: white;
+  margin-top: 10px;
+}
+
+.resubmit-btn:hover {
+  background-color: #138496;
+}
+    </style>
+</head>
+
+<body>
+    {{> masterHeader}}
+
+    <div class="container">
+        <h1>Мои услуги</h1>
+
+        <!-- Форма добавления новой услуги -->
+        <div class="add-service-form">
+            <h2>Добавить новую услугу</h2>
+            <form id="addServiceForm" action="/profile/addService" method="post">
+                <div class="form-group">
+                    <label for="name">Название:</label>
+                    <input type="text" id="name" name="name" placeholder="Название" required>
+                </div>
+                <div class="form-group">
+                    <label for="type">Тип:</label>
+                    <select name="type" id="type" required>
+                        <option value="" disabled selected>Выберите тип</option>
+                        {{#each types}}
+                        <option value="{{this.TypeId}}">{{this.TypeName}}</option>
+                        {{/each}}
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="description">Описание:</label>
+                    <textarea id="description" name="description" placeholder="Описание" maxlength="200"></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="location">Локация:</label>
+                    <select name="location" id="location" required onchange="toggleOtherLocationField()">
+                        <option value="" disabled selected>Выберите локацию</option>
+                        <option value="Минск">Минск</option>
+                        <option value="Витебск">Витебск</option>
+                        <option value="Гомель">Гомель</option>
+                        <option value="Гродно">Гродно</option>
+                        <option value="Могилев">Могилев</option>
+                        <option value="Брест">Брест</option>
+                        <option value="Иное">Иное</option>
+                    </select>
+                </div>
+                <div class="form-group" id="otherLocationField" style="display: none;">
+                    <label for="otherLocation">Укажите другую локацию:</label>
+                    <input type="text" id="otherLocation" name="otherLocation" placeholder="Укажите другую локацию"
+                        maxlength="100">
+                </div>
+                <div class="form-group">
+                    <label>Выберите критерии:</label>
+                    <div class="criteria-list">
+                        {{#each criterias}}
+                        <label class="criteria-item">
+                            <input type="checkbox" name="criteriaIds" value="{{this.CriteriasId}}"> {{this.Name}}
+                        </label>
+                        {{/each}}
+                    </div>
+                </div>
+                <button type="submit">Добавить</button>
+            </form>
+        </div>
+
+        <!-- Список услуг -->
+        <div class="services-list">
+            <h2>Список моих услуг</h2>
+            {{#each services}}
+            <div class="service-card" data-id="{{this.ServiceId}}">
+                <h3>{{this.Name}}</h3>
+                <p>{{this.Description}}</p>
+                <p><strong>Тип:</strong> {{this.TypeName}}</p>
+                <p><strong>Локация:</strong> {{this.Location}}</p>
+                <p><strong>Критерии:</strong>
+                    {{#each this.Criterias}}
+                    {{this}}{{#unless @last}}, {{/unless}}
+                    {{/each}}
+                </p>
+                  <p class="status">
+    Статус: 
+<span class="status-badge 
+  {{#if (eq Status 0)}}status-pending
+  {{else if (eq Status 1)}}status-approved
+  {{else if (eq Status 2)}}status-rejected
+  {{else if (eq Status 3)}}status-draft{{/if}}">
+
+  {{#if (eq Status 0)}}На рассмотрении
+  {{else if (eq Status 1)}}Одобрено
+  {{else if (eq Status 2)}}Отклонено
+  {{else if (eq Status 3)}}Черновик{{/if}}
+</span>
+  </p>
+                <button class="edit-btn" onclick="openEditModal('{{this.ServiceId}}')">Редактировать</button>
+                <button class="delete-btn" onclick="deleteService('{{this.ServiceId}}')">Удалить</button>
+{{#if (or (eq Status 3) (eq Status 2))}}
+    <button class="resubmit-btn" onclick="submitForReview('{{this.ServiceId}}')">
+        Отправить на рассмотрение
+    </button>
+{{/if}}
+            </div>
+            {{/each}}
+        </div>
+
+        <!-- Модальное окно для редактирования услуги -->
+        <div id="editModal" class="modal">
+            <div class="modal-content">
+                <span class="close" onclick="closeEditModal()">&times;</span>
+                <h2>Редактировать услугу</h2>
+                <form id="editServiceForm" method="POST">
+                    <input type="hidden" id="editServiceId" name="ServiceId">
+                    <div class="form-group">
+                        <label for="editName">Название:</label>
+                        <input type="text" id="editName" name="Name" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="editType">Тип:</label>
+                        <select id="editType" name="TypeId" required>
+                            <option value="" disabled>Выберите тип</option>
+                            {{#each types}}
+                            <option value="{{this.TypeId}}">{{this.TypeName}}</option>
+                            {{/each}}
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="editDescription">Описание:</label>
+                        <textarea id="editDescription" name="Description" required></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="editLocation">Локация:</label>
+
+                        <select id="editLocation" name="Location" required>
+                            <option value="Минск">Минск</option>
+                            <option value="Витебск">Витебск</option>
+                            <option value="Гомель">Гомель</option>
+                            <option value="Гродно">Гродно</option>
+                            <option value="Могилев">Могилев</option>
+                            <option value="Брест">Брест</option>
+                            <option value="Иное">Иное</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Выберите критерии:</label>
+                        <div class="criteria-list" id="editCriteriaList">
+                            {{#each criterias}}
+                            <label class="criteria-item">
+                                <input type="checkbox" name="criteriaIds" value="{{this.CriteriasId}}"> {{this.Name}}
+                            </label>
+                            {{/each}}
+                        </div>
+                    </div>
+                    <button type="submit">Сохранить изменения</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Функция для открытия модального окна редактирования
+function openEditModal(serviceId) {
+    const serviceCard = document.querySelector(`.service-card[data-id="${serviceId}"]`);
+    const serviceName = serviceCard.querySelector('h3').innerText;
+    const serviceDescription = serviceCard.querySelector('p').innerText;
+    const serviceType = serviceCard.querySelector('p:nth-of-type(2)').innerText.replace('Тип: ', '');
+    const serviceLocation = serviceCard.querySelector('p:nth-of-type(3)').innerText.replace('Локация: ', '');
+    const serviceCriterias = serviceCard.querySelector('p:nth-of-type(4)').innerText.replace('Критерии: ', '').split(', ');
+
+    // Заполняем форму редактирования
+    document.getElementById('editServiceId').value = serviceId;
+    document.getElementById('editName').value = serviceName;
+    document.getElementById('editDescription').value = serviceDescription;
+
+    // Устанавливаем выбранный тип услуги
+    const typeSelect = document.getElementById('editType');
+    const typeOptions = typeSelect.options;
+    for (let i = 0; i < typeOptions.length; i++) {
+        if (typeOptions[i].textContent === serviceType) {
+            typeOptions[i].selected = true;
+            break;
+        }
+    }
+
+    // Устанавливаем выбранную локацию
+    document.getElementById('editLocation').value = serviceLocation;
+
+    // Отмечаем выбранные критерии
+    const criteriaCheckboxes = document.querySelectorAll('#editCriteriaList input[type="checkbox"]');
+    criteriaCheckboxes.forEach(checkbox => {
+        checkbox.checked = serviceCriterias.includes(checkbox.nextSibling.textContent.trim());
+    });
+
+    // Открываем модальное окно
+    document.getElementById('editModal').style.display = 'flex';
+}
+
+        // Функция для закрытия модального окна
+        function closeEditModal() {
+            document.getElementById('editModal').style.display = 'none';
+        }
+
+        // Функция для удаления услуги
+        function deleteService(serviceId) {
+            if (confirm('Вы уверены, что хотите удалить эту услугу?')) {
+                fetch(`/profile/deleteService/${serviceId}`, {
+                    method: 'DELETE'
+                }).then(response => {
+                    if (response.ok) {
+                        location.reload();
+                    }
+                });
+            }
+        }
+document.getElementById('editServiceForm').addEventListener('submit', function (event) {
+    event.preventDefault();
+
+    // Собираем данные формы
+    const formData = new FormData(this);
+    const data = {
+        serviceId: formData.get('ServiceId'), // Передаем serviceId в теле запроса
+        name: formData.get('Name'),
+        type: formData.get('TypeId'),
+        description: formData.get('Description'),
+        location: formData.get('Location'),
+        criteriaIds: []
+    };
+
+    // Собираем выбранные критерии
+    const criteriaCheckboxes = document.querySelectorAll('#editCriteriaList input[type="checkbox"]:checked');
+    criteriaCheckboxes.forEach(checkbox => {
+        data.criteriaIds.push(checkbox.value);
+    });
+
+    // Отправляем данные на сервер
+    fetch('/profile/editService', { // Убираем serviceId из URL
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(data)
+    }).then(response => {
+        if (response.ok) {
+            alert('Услуга успешно обновлена');
+            closeEditModal();
+            location.reload();
+        } else {
+            alert('Произошла ошибка при обновлении услуги');
+        }
+    }).catch(error => {
+        console.error('Ошибка:', error);
+    });
+});
+        // Переключение поля для ввода другой локации
+        function toggleOtherLocationField() {
+            const locationSelect = document.getElementById('location');
+            const otherLocationField = document.getElementById('otherLocationField');
+            otherLocationField.style.display = locationSelect.value === 'Иное' ? 'block' : 'none';
+        }
+
+       function submitForReview(serviceId) {
+  if (confirm('Отправить услугу на рассмотрение?')) {
+    fetch(`changeService/${serviceId}/status`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ status: 0 })
+    })
+    .then(response => {
+      if (!response.ok) throw new Error('Ошибка сервера');
+      return response.json();
+    })
+    .then(data => {
+      alert(data.message);
+      location.reload();
+    })
+    .catch(error => {
+      console.error('Ошибка:', error);
+      alert(error.message);
+    });
+  }
+}
+    </script>
+</body>
+
+</html>

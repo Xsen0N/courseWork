@@ -1,0 +1,16 @@
+rules:
+  - rule: Уточнить тип мероприятия
+    condition:
+      - active_loop: hire_form
+      - slot_was_set:
+          - event_type: null
+    steps:
+      - action: utter_ask_event_type
+
+  - rule: Уточнить критерии
+    condition:
+      - active_loop: hire_form
+      - slot_was_set:
+          - criteria: null
+    steps:
+      - action: utter_ask_criteria 

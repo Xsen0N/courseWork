@@ -1,0 +1,62 @@
+.modal_art {
+    display: inline-block;
+}
+
+.modal_art-open {
+    display: none;
+}
+
+.modal_art-wrap {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 999;
+    display: none;
+}
+
+.modal_art-wrap:target {
+    display: block;
+}
+
+.modal_art-dialog {
+    background: #fff;
+    width: 60%;
+    max-width: 800px;
+    margin: 50px auto;
+    padding: 20px;
+    border-radius: 8px;
+    position: relative;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+}
+
+.modal_art-header {
+    text-align: right;
+}
+
+.btn_art-close {
+    cursor: pointer;
+}
+
+.modal_art-body {
+    text-align: center;
+}
+
+.art-photo {
+    width: 100%;
+    max-width: 400px;
+    height: auto;
+    margin-bottom: 20px;
+}
+
+h2 {
+    font-size: 24px;
+    margin-bottom: 10px;
+}
+
+p {
+    font-size: 16px;
+    line-height: 1.5;
+}

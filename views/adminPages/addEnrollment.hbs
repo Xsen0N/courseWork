@@ -1,0 +1,6 @@
+<label for="schedulerId">Расписание:</label>
+<select id="schedulerId" name="schedulerId">
+    {{#each schedule}}
+    <option value="{{this.id}}">{{this.date}} - {{this.startTime}} - {{this.endTime}}</option>
+    {{/each}}
+</select><br><br>

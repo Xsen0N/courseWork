@@ -1,0 +1,42 @@
+module.exports = function(sequelize, DataTypes) {
+    return sequelize.define('Master', {
+      MasterId: {
+        type: DataTypes.INTEGER,
+        primaryKey: true,
+        autoIncrement: true
+      },
+      ProfessionId: {
+        type: DataTypes.INTEGER,
+        allowNull: false
+      },
+      Name: {
+        type: DataTypes.STRING(1000),
+        allowNull: false
+      },
+      Login: {
+          type: DataTypes.STRING(1000),
+          allowNull: false
+      },
+      Password: {
+        type: DataTypes.STRING(60),
+        allowNull: false
+      },
+      Photo: {
+        type: DataTypes.BLOB('long'),
+        allowNull: true
+      },
+      Description: {
+        type: DataTypes.STRING,
+        allowNull: true
+      },
+      PriceForHour: {
+        type: DataTypes.DOUBLE,
+        allowNull: true
+      }
+    }, {
+      sequelize,
+      tableName: 'Master',
+      timestamps: false
+    });
+  };
+  

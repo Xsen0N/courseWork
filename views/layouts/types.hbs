@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Login Form</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f8f9fa;
+            margin: 0;
+            padding: 0;
+        }
+
+        .admin-header {
+            background-color: #2c3e50;
+            color: #fff;
+            padding: 20px 0;
+            text-align: center;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 20px;
+        }
+
+        #add-type-button {
+            background-color: #28a745;
+            color: #fff;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            margin-bottom: 20px;
+            font-size: 16px;
+            transition: background-color 0.3s ease;
+        }
+
+        #add-type-button:hover {
+            background-color: #218838;
+        }
+
+        .types {
+            background-color: #fff;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .types:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .types h2 {
+            color: #2c3e50;
+            margin-top: 0;
+            font-size: 24px;
+        }
+
+        .types p {
+            color: #555;
+            margin: 8px 0;
+            font-size: 14px;
+        }
+
+        .details-button,
+        .delete-button {
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            margin-right: 10px;
+            font-size: 14px;
+            transition: background-color 0.3s ease;
+        }
+
+        .details-button:hover {
+            background-color: #0056b3;
+        }
+
+        .delete-button {
+            background-color: #dc3545;
+        }
+
+        .delete-button:hover {
+            background-color: #c82333;
+        }
+
+        .no-types {
+            text-align: center;
+            color: #888;
+            font-size: 18px;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+
+<body>
+    {{> adminHeader}}
+    <div class="container">
+        <button id="add-type-button">Добавить новый тип</button>
+
+        {{#if types.length}}
+            {{#each types}}
+                <div class="types">
+                    <h2>{{TypeName}}</h2>
+                    <p>ID: {{TypeId}}</p>
+                    <p>{{Description}}</p>
+                    <button class="details-button" data-type-id="{{this.TypeId}}">Изменить</button>
+                    <button class="delete-button" data-type-id="{{this.TypeId}}">Удалить</button>
+                </div>
+            {{/each}}
+        {{else}}
+            <p class="no-types">Типов пока нет</p>
+        {{/if}}
+    </div>
+
+    <script>
+        document.getElementById('add-type-button').addEventListener('click', () => {
+            window.location.href = '/admin/addType';
+        });
+
+        document.querySelectorAll('.details-button').forEach(button => {
+            button.addEventListener('click', () => {
+                const typeId = button.dataset.typeId;
+                window.location.href = `/admin/editType/${typeId}`;
+            });
+        });
+
+        document.querySelectorAll('.delete-button').forEach(button => {
+            button.addEventListener('click', async () => {
+                const typeId = button.dataset.typeId;
+                if (confirm('Вы уверены, что хотите удалить этот тип?')) {
+                    try {
+                        const response = await fetch(`/admin/deleteType/${typeId}`, {
+                            method: 'DELETE'
+                        });
+                        if (response.ok) {
+                            window.location.reload();
+                        } else {
+                            console.error('Ошибка при удалении типа');
+                        }
+                    } catch (error) {
+                        console.error('Ошибка при удалении типа:', error);
+                    }
+                }
+            });
+        });
+    </script>
+</body>
+
+</html>

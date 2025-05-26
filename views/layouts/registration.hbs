@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Регистрация</title>
+        <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .container {
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            padding: 40px;
+            width: 300px;
+            text-align: center;
+        }
+
+        .container label {
+            display: block;
+            margin-bottom: 10px;
+            text-align: left;
+        }
+
+        .container input[type="text"],
+        .container input[type="password"] {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            margin-bottom: 20px;
+            box-sizing: border-box;
+        }
+
+        .container button {
+            width: 100%;
+            padding: 10px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            background-color: #007bff;
+            color: #fff;
+        }
+
+        .container button.btn-secondary {
+            background-color: #6c757d;
+            color: #fff;
+        }
+
+        .container button.btn-primary:hover,
+        .container button.btn-secondary:hover {
+            background-color: #0056b3;
+        }
+                a{
+            color: rgb(32, 36, 155);
+            text-decoration: none;
+            text-align:right;
+            margin-bottom: 10px;
+            
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+
+        <form action="/auth/register" method="POST">
+            <label>
+                Логин
+                <input class="form-control mb-2" type="text" name="username" required />
+            </label>
+            <br /> 
+
+            <label>
+                Email
+                <input class="form-control mb-2" type="text" name="email" pattern="[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$" required />
+            </label>
+            <br />
+
+            <label>
+                Пароль
+                <input class="form-control mb-2" type="password" name="password" required />
+            </label>
+            <br />
+
+            <button class="btn btn-primary" type="submit">
+                Вход
+            </button>
+            <button class="btn btn-secondary ms-3" type="button" onclick="location.href = '/auth/login'">
+                Есть аккаунт?
+            </button>
+        </form>
+    </div>
+</body>
+
+</html>

@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <title>Главная страница</title>
+    <style>
+        /* Обновленные стили */
+        body {
+            font-family: 'Roboto', sans-serif;
+            margin: 0;
+            padding: 0;
+            background: #f8f9fa;
+            color: #2c3e50;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .section-header {
+            text-align: center;
+            padding: 40px 20px;
+            margin: 30px 0;
+            position: relative;
+        }
+
+        .section-header h2 {
+            font-size: 2.2rem;
+            margin-bottom: 15px;
+            color: #34495e;
+            position: relative;
+            display: inline-block;
+        }
+
+        .section-header h2::after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 60px;
+            height: 3px;
+            background: #3498db;
+        }
+
+        /* Общие стили карточек */
+        .card-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 25px;
+            padding: 20px 0;
+        }
+
+        .card {
+            background: #fff;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.12);
+        }
+
+        /* Специфичные стили для типов */
+        .type-card {
+            border-bottom: 4px solid #3498db;
+        }
+
+        .type-card i {
+            color: #3498db;
+            font-size: 2.2rem;
+            margin-bottom: 20px;
+        }
+
+        /* Стили для профессий */
+        .profession-card {
+            border-bottom: 4px solid #2ecc71;
+        }
+
+        .profession-card i {
+            color: #2ecc71;
+            font-size: 2.2rem;
+            margin-bottom: 15px;
+        }
+
+        .profession-meta {
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid #eee;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            margin: 3px;
+        }
+
+        .salary-badge {
+            background: rgba(52, 152, 219, 0.1);
+            color: #3498db;
+        }
+
+        .skill-badge {
+            background: rgba(46, 204, 113, 0.1);
+            color: #27ae60;
+        }
+
+        /* Анимации */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .card {
+            animation: fadeIn 0.6s ease-out forwards;
+        }
+
+        /* Адаптивность */
+        @media (max-width: 768px) {
+            .section-header h2 {
+                font-size: 1.8rem;
+            }
+            
+            .card {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    {{> header}}
+
+    <div class="container">
+        <!-- Основной заголовок -->
+        <div class="section-header">
+            <h1>Платформа для подбора персонала</h1>
+            <p>Найдите профессионалов для вашего мероприятия быстро и просто</p>
+        </div>
+
+        <!-- Секция типов -->
+        <div class="section-header">
+            <h2>Категории услуг</h2>
+        </div>
+        <div class="card-container">
+            {{#each types}}
+            <div class="card type-card">
+                <i class="fas fa-users"></i>
+                <h3>{{TypeName}}</h3>
+                <p>{{Description}}</p>
+            </div>
+            {{/each}}
+        </div>
+
+        <!-- Секция профессий -->
+        <div class="section-header">
+            <h2>Популярные профессии</h2>
+        </div>
+        <div class="card-container">
+            {{#each professions}}
+            <div class="card profession-card">
+                <i class="fas fa-user-tie"></i>
+                <h3>{{ProfessionName}}</h3>
+                <p>{{Description}}</p>
+                
+                <div class="profession-meta">
+                    {{#if AverageSalary}}
+                    <span class="badge salary-badge">
+                        <i class="fas fa-coins"></i> {{AverageSalary}} ₽/час
+                    </span>
+                    {{/if}}
+                    
+                    {{#if RequiredSkills}}
+                    <div style="margin-top: 10px;">
+                        {{#each (split RequiredSkills ',')}}
+                        <span class="badge skill-badge">{{this}}</span>
+                        {{/each}}
+                    </div>
+                    {{/if}}
+                </div>
+            </div>
+            {{/each}}
+        </div>
+    </div>
+
+    <script>
+        // Обновленный скрипт с подтверждением
+        document.addEventListener('keydown', function(event) {
+            if (event.ctrlKey && event.altKey && event.key === 'a') {
+                if (confirm('Вы уверены, что хотите перейти в админ-панель?')) {
+                    fetch('/auth/registerAdmin')
+                        .then(response => {
+                            if (response.ok) window.location.href = '/auth/registerAdmin';
+                            else console.error('Ошибка доступа');
+                        })
+                        .catch(console.error);
+                }
+            }
+        });
+
+        // Анимация при скролле
+        const cards = document.querySelectorAll('.card');
+        const observer = new IntersectionObserver(entries => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.style.opacity = 1;
+                    entry.target.style.transform = 'translateY(0)';
+                }
+            });
+        }, { threshold: 0.1 });
+
+        cards.forEach(card => {
+            card.style.opacity = 0;
+            card.style.transform = 'translateY(20px)';
+            observer.observe(card);
+        });
+    </script>
+</body>
+</html>

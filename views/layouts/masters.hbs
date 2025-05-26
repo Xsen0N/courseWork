@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Просмотр мастеров</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f9f9f9;
+            margin: 0;
+            padding: 0;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 20px auto;
+            padding: 0 20px;
+        }
+
+        .filters {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .filters input[type="text"],
+        .filters select,
+        .filters input[type="checkbox"] {
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 1rem;
+            transition: border-color 0.3s;
+        }
+
+        .filters input[type="text"]:focus,
+        .filters select:focus,
+        .filters input[type="checkbox"]:focus {
+            border-color: #007bff;
+            outline: none;
+        }
+
+        .filters label {
+            font-size: 1rem;
+            color: #555;
+        }
+
+        .master-cards {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .master-card {
+            background-color: #fff;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            border-radius: 10px;
+            padding: 20px;
+            width: calc(33.33% - 20px);
+            transition: transform 0.3s, box-shadow 0.3s;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .master-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15);
+        }
+
+        .master-card h2 {
+            margin-top: 0;
+            font-size: 1.2rem;
+            color: #007bff;
+        }
+
+        .master-card p {
+            margin: 10px 0;
+            color: #666;
+            font-size: 1rem;
+        }
+
+        .master-card a {
+            display: inline-block;
+            margin-top: 15px;
+            text-decoration: none;
+            color: #007bff;
+            font-weight: bold;
+            transition: color 0.3s;
+        }
+
+        .master-card a:hover {
+            color: #0056b3;
+            text-decoration: underline;
+        }
+
+        .master-card span {
+            display: block;
+            margin-top: 10px;
+            font-size: 0.9rem;
+            color: #888;
+        }
+
+        /* Адаптивность */
+        @media (max-width: 992px) {
+            .master-card {
+                width: calc(50% - 20px);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .master-card {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    {{> header}}
+    <div class="container">
+        <div class="filters">
+            <!-- Поиск по имени -->
+            <input type="text" id="searchInput" placeholder="Поиск по имени...">
+
+            <!-- Фильтр по наличию описания -->
+            <input type="checkbox" id="descriptionFilter">
+            <label for="descriptionFilter">С описанием</label>
+
+            <!-- Фильтр по цене -->
+            <select id="priceFilter">
+                <option value="">Любая цена</option>
+                <option value="0-50">До 50 BYN</option>
+                <option value="50-100">50–100 BYN</option>
+                <option value="100+">Более 100 BYN</option>
+            </select>
+        </div>
+
+        <div id="masters-list" class="master-cards">
+            {{#each masters}}
+            <div class="master-card" data-name="{{Name}}" data-description="{{Description}}"
+                data-type="{{this.class.ArtType}}" data-price="{{PriceForHour}}">
+                <h2>{{Name}}</h2>
+                {{#if Photo}}
+                <img src="data:{{PhotoType}};base64,{{Photo}}" alt="Фото мастера {{Name}}" width="100">
+                {{/if}}
+                <p>{{Description}}</p>
+                <p><strong>Цена за час:</strong> {{PriceForHour}} BYN</p>
+                <a href="/masters/{{this.MasterId}}">Посмотреть детали</a>
+            </div>
+            {{/each}}
+        </div>
+    </div>
+
+    <script>
+        // Функция для поиска мастеров по имени
+        document.getElementById('searchInput').addEventListener('input', function () {
+            var searchText = this.value.toLowerCase();
+            filterMasters();
+        });
+
+        // Функция для фильтрации мастеров по наличию описания
+        document.getElementById('descriptionFilter').addEventListener('change', function () {
+            filterMasters();
+        });
+
+        // Функция для фильтрации мастеров по цене
+        document.getElementById('priceFilter').addEventListener('change', function () {
+            filterMasters();
+        });
+
+        // Основная функция фильтрации
+        function filterMasters() {
+            var searchText = document.getElementById('searchInput').value.toLowerCase();
+            var descriptionFilter = document.getElementById('descriptionFilter').checked;
+            var priceFilter = document.getElementById('priceFilter').value;
+
+            var masterCards = document.querySelectorAll('.master-card');
+            masterCards.forEach(function (card) {
+                var name = card.dataset.name.toLowerCase();
+                var description = card.dataset.description;
+                var price = parseFloat(card.dataset.price); // Преобразуем цену в число
+
+                var matchesSearch = name.includes(searchText);
+                var matchesDescription = !descriptionFilter || description.trim() !== '';
+                var matchesPrice = true;
+
+                // Фильтрация по цене
+                if (priceFilter) {
+                    if (priceFilter === "0-50") {
+                        matchesPrice = price <= 50;
+                    } else if (priceFilter === "50-100") {
+                        matchesPrice = price > 50 && price <= 100;
+                    } else if (priceFilter === "100+") {
+                        matchesPrice = price > 100;
+                    }
+                }
+
+                if (matchesSearch && matchesDescription && matchesPrice) {
+                    card.style.display = 'block';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+        }
+    </script>
+</body>
+
+</html>

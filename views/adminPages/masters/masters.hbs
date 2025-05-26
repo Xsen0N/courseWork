@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Управление мастерами</title>
+</head>
+<body>
+    <h1>Управление мастерами</h1>
+
+    <!-- Форма для добавления нового мастера -->
+    <h2>Добавить нового мастера</h2>
+    <form id="add-master-form">
+        <input type="text" id="name" placeholder="Имя" required>
+        <input type="text" id="description" placeholder="Описание" required>
+        <button type="submit">Добавить</button>
+    </form>
+
+    <!-- Список мастеров -->
+    <h2>Список мастеров</h2>
+    <div id="masters-list"></div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const form = document.getElementById('add-master-form');
+            const nameInput = document.getElementById('name');
+            const descriptionInput = document.getElementById('description');
+            const mastersList = document.getElementById('masters-list');
+
+            // Функция для загрузки списка мастеров
+            const loadMasters = async () => {
+                try {
+                    const response = await fetch('/masters');
+                    const masters = await response.json();
+                    mastersList.innerHTML = '';
+                    masters.forEach(master => {
+                        const div = document.createElement('div');
+                        div.className = 'master-card';
+                        div.innerHTML = `
+                            <h2>${master.Name}</h2>
+                            <p>${master.Description}</p>
+                            <button class="delete-master-btn" data-id="${master.MasterId}">Удалить</button>
+                        `;
+                        mastersList.appendChild(div);
+                    });
+                    attachDeleteEventListeners();
+                } catch (error) {
+                    console.error('Ошибка при загрузке мастеров:', error);
+                }
+            };
+
+            // Загрузка списка мастеров при загрузке страницы
+            loadMasters();
+
+            // Обработчик отправки формы для добавления нового мастера
+            form.addEventListener('submit', async (event) => {
+                event.preventDefault();
+                const formData = {
+                    Name: nameInput.value,
+                    Description: descriptionInput.value
+                };
+                try {
+                    await fetch('/masters', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(formData)
+                    });
+                    // Очистка полей формы и обновление списка мастеров
+                    nameInput.value = '';
+                    descriptionInput.value = '';
+                    loadMasters();
+                } catch (error) {
+                    console.error('Ошибка при добавлении мастера:', error);
+                }
+            });
+
+            // Обработчики событий для кнопок удаления мастеров
+            const attachDeleteEventListeners = () => {
+                const deleteButtons = document.querySelectorAll('.delete-master-btn');
+                deleteButtons.forEach(button => {
+                    button.addEventListener('click', async () => {
+                        const id = button.dataset.id;
+                        try {
+                            const response = await fetch(`/masters/${id}`, {
+                                method: 'DELETE'
+                            });
+                            if (response.status === 204) {
+                                // Успешно удалено
+                                button.closest('.master-card').remove();
+                            } else {
+                                // Обработка ошибки удаления
+                                const errorMessage = await response.text();
+                                alert(`Ошибка удаления мастера: ${errorMessage}`);
+                            }
+                        } catch (error) {
+                            console.error('Ошибка при удалении мастера:', error);
+                            alert('Произошла ошибка при удалении мастера');
+                        }
+                    });
+                });
+            };
+        });
+    </script>
+</body>
+</html>
