@@ -10,12 +10,14 @@ const adminRouter = require("./adminRouter");
 const profileRouter = require("./profileRouter");
 const requestRouter = require("./requestRouter");
 const notificationRouter = require("./notificationRouter");
+const chatRouter = require("./chatRouter");
 
 
 router.use("/", homeRouter);
 router.use("/request", requestRouter);
 router.use("/auth", authRouter);
 router.use("/masters", mastersRouter);
+router.use("/chat", chatRouter);
 router.use("/admin", adminRouter);
 router.use("/enrollment", enrollmentRouter);
 router.use("/services", serviceRouter);

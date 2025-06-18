@@ -1,106 +1,333 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ru">
 
 <head>
     <meta charset="UTF-8">
-    <title>Регистрация</title>
-        <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f4f4f4;
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Регистрация администратора | EventStaff</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --primary-dark: #1a2a3a;
+            --secondary-color: #e74c3c;
+            --text-color: #333;
+            --error-color: #e74c3c;
+            --success-color: #2ecc71;
+            --background-color: #f5f5f5;
+        }
+
+        * {
             margin: 0;
             padding: 0;
+            box-sizing: border-box;
+            font-family: 'Roboto', sans-serif;
+        }
+
+        body {
+            min-height: 100vh;
             display: flex;
             justify-content: center;
             align-items: center;
-            height: 100vh;
+            background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+            padding: 20px;
         }
 
-        .container {
-            background-color: #fff;
-            border-radius: 8px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        .register-container {
+            background: white;
             padding: 40px;
-            width: 300px;
+            border-radius: 20px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+            width: 100%;
+            max-width: 500px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .register-container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -50%;
+            width: 100%;
+            height: 4px;
+            background: linear-gradient(90deg, transparent, var(--secondary-color), transparent);
+            animation: loading 2s linear infinite;
+        }
+
+        @keyframes loading {
+            0% { left: -50%; }
+            100% { left: 100%; }
+        }
+
+        .form-header {
             text-align: center;
+            margin-bottom: 30px;
         }
 
-        .container label {
-            display: block;
+        .form-header h1 {
+            color: var(--primary-color);
+            font-size: 2em;
             margin-bottom: 10px;
-            text-align: left;
         }
 
-        .container input[type="text"],
-        .container input[type="password"] {
-            width: 100%;
-            padding: 10px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-            margin-bottom: 20px;
-            box-sizing: border-box;
+        .form-header p {
+            color: #666;
+            font-size: 0.9em;
         }
 
-        .container button {
+        .form-group {
+            margin-bottom: 25px;
+            position: relative;
+        }
+
+        .form-group input {
             width: 100%;
-            padding: 10px;
+            padding: 12px 15px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            outline: none;
+            color: var(--text-color);
+        }
+
+        .form-group input:focus {
+            border-color: var(--secondary-color);
+            box-shadow: 0 0 0 3px rgba(231, 76, 60, 0.1);
+        }
+
+        .form-group label {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: white;
+            padding: 0 5px;
+            color: #666;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            pointer-events: none;
+        }
+
+        .form-group input:focus + label,
+        .form-group input:not(:placeholder-shown) + label {
+            top: 0;
+            font-size: 12px;
+            color: var(--secondary-color);
+        }
+
+        .form-group i {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #666;
+        }
+
+        .submit-btn {
+            width: 100%;
+            padding: 15px;
+            background: var(--secondary-color);
             border: none;
-            border-radius: 4px;
+            border-radius: 8px;
+            color: white;
+            font-size: 16px;
+            font-weight: 500;
             cursor: pointer;
-            transition: background-color 0.3s;
-            background-color: #007bff;
-            color: #fff;
+            transition: all 0.3s ease;
+            margin-bottom: 20px;
         }
 
-        .container button.btn-secondary {
-            background-color: #6c757d;
-            color: #fff;
+        .submit-btn:hover {
+            background: #c0392b;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
         }
 
-        .container button.btn-primary:hover,
-        .container button.btn-secondary:hover {
-            background-color: #0056b3;
+        .submit-btn:active {
+            transform: translateY(0);
         }
-                a{
-            color: rgb(32, 36, 155);
+
+        .form-footer {
+            text-align: center;
+            margin-top: 20px;
+            color: #666;
+        }
+
+        .form-footer a {
+            color: var(--secondary-color);
             text-decoration: none;
-            text-align:right;
-            margin-bottom: 10px;
-            
+            font-weight: 500;
+            transition: color 0.3s ease;
+        }
+
+        .form-footer a:hover {
+            color: #c0392b;
+        }
+
+        .back-btn {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            color: white;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        .back-btn:hover {
+            transform: translateX(-5px);
+        }
+
+        .password-requirements {
+            font-size: 12px;
+            color: #666;
+            margin-top: 5px;
+            padding-left: 15px;
+        }
+
+        .password-requirements ul {
+            list-style: none;
+            padding: 0;
+            margin: 5px 0;
+        }
+
+        .password-requirements li {
+            margin: 3px 0;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .password-requirements li i {
+            font-size: 10px;
+        }
+
+        .requirement-met {
+            color: var(--success-color);
+        }
+
+        .requirement-not-met {
+            color: var(--error-color);
+        }
+
+        @media (max-width: 480px) {
+            .register-container {
+                padding: 30px 20px;
+            }
+
+            .form-header h1 {
+                font-size: 1.8em;
+            }
+
+            .back-btn {
+                top: 10px;
+                left: 10px;
+            }
         }
     </style>
 </head>
 
 <body>
-    <div class="container">
-
-        <form action="/auth/registerAdmin" method="POST">
-            <label>
-                Логин
-                <input class="form-control mb-2" type="text" name="username" required />
-            </label>
-            <br /> 
-
-            <label>
-                Email
-                <input class="form-control mb-2" type="text" name="email" pattern="[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$" required />
-            </label>
-            <br />
-
-            <label>
-                Пароль
-                <input class="form-control mb-2" type="password" name="password" required />
-            </label>
-            <br />
-
-            <button class="btn btn-primary" type="submit">
-                Вход
+    <a href="/" class="back-btn">
+        <i class="fas fa-arrow-left"></i> На главную
+    </a>
+    <div class="register-container">
+        <div class="form-header">
+            <h1>Регистрация администратора</h1>
+            <p>Создание аккаунта с правами администратора</p>
+        </div>
+        <form action="/auth/registerAdmin" method="POST" id="adminRegForm">
+            <div class="form-group">
+                <input type="text" id="username" name="username" placeholder=" " required pattern="[a-zA-Z0-9_]{4,20}">
+                <label for="username">Логин</label>
+                <i class="fas fa-user-shield"></i>
+            </div>
+            <div class="form-group">
+                <input type="email" id="email" name="email" placeholder=" " required>
+                <label for="email">Email</label>
+                <i class="fas fa-envelope"></i>
+            </div>
+            <div class="form-group">
+                <input type="password" id="password" name="password" placeholder=" " required minlength="8">
+                <label for="password">Пароль</label>
+                <i class="fas fa-lock"></i>
+            </div>
+            <div class="password-requirements">
+                <p>Требования к паролю:</p>
+                <ul>
+                    <li id="length-req"><i class="fas fa-circle"></i> Минимум 8 символов</li>
+                    <li id="uppercase-req"><i class="fas fa-circle"></i> Хотя бы одна заглавная буква</li>
+                    <li id="lowercase-req"><i class="fas fa-circle"></i> Хотя бы одна строчная буква</li>
+                    <li id="number-req"><i class="fas fa-circle"></i> Хотя бы одна цифра</li>
+                    <li id="special-req"><i class="fas fa-circle"></i> Хотя бы один специальный символ</li>
+                </ul>
+            </div>
+            <button type="submit" class="submit-btn">
+                <i class="fas fa-user-plus"></i> Зарегистрироваться
             </button>
-            <button class="btn btn-secondary ms-3" type="button" onclick="location.href = '/auth/login'">
-                Есть аккаунт?
-            </button>
+            <div class="form-footer">
+                <p>Уже есть аккаунт? <a href="/auth/login">Войти</a></p>
+            </div>
         </form>
     </div>
-</body>
 
+    <script>
+        const passwordInput = document.getElementById('password');
+        const requirements = {
+            length: document.getElementById('length-req'),
+            uppercase: document.getElementById('uppercase-req'),
+            lowercase: document.getElementById('lowercase-req'),
+            number: document.getElementById('number-req'),
+            special: document.getElementById('special-req')
+        };
+
+        function updateRequirements(password) {
+            const checks = {
+                length: password.length >= 8,
+                uppercase: /[A-Z]/.test(password),
+                lowercase: /[a-z]/.test(password),
+                number: /[0-9]/.test(password),
+                special: /[!@#$%^&*(),.?":{}|<>]/.test(password)
+            };
+
+            for (const [key, element] of Object.entries(requirements)) {
+                const icon = element.querySelector('i');
+                if (checks[key]) {
+                    element.classList.add('requirement-met');
+                    element.classList.remove('requirement-not-met');
+                    icon.className = 'fas fa-check';
+                } else {
+                    element.classList.add('requirement-not-met');
+                    element.classList.remove('requirement-met');
+                    icon.className = 'fas fa-circle';
+                }
+            }
+        }
+
+        passwordInput.addEventListener('input', (e) => {
+            updateRequirements(e.target.value);
+        });
+
+        document.getElementById('adminRegForm').addEventListener('submit', function(e) {
+            const password = passwordInput.value;
+            const checks = {
+                length: password.length >= 8,
+                uppercase: /[A-Z]/.test(password),
+                lowercase: /[a-z]/.test(password),
+                number: /[0-9]/.test(password),
+                special: /[!@#$%^&*(),.?":{}|<>]/.test(password)
+            };
+
+            if (!Object.values(checks).every(Boolean)) {
+                e.preventDefault();
+                alert('Пожалуйста, убедитесь, что пароль соответствует всем требованиям безопасности.');
+            }
+        });
+    </script>
+</body>
 </html>

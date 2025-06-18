@@ -1,6 +1,6 @@
 <!-- Кнопка/иконка уведомлений -->
 <div class="notification-icon" id="notificationIcon">
-    🔔
+    <i class="fas fa-bell"></i>
     <span class="badge" id="notificationBadge">0</span>
 </div>
 
@@ -8,7 +8,9 @@
 <div class="notifications-popup" id="notificationsPopup" style="display: none;">
     <div class="notifications-header">
         <h3>Уведомления</h3>
-        <button id="markAllAsRead">Прочитать все</button>
+        <button id="markAllAsRead" class="mark-all-btn">
+            <i class="fas fa-check-double"></i> Прочитать все
+        </button>
     </div>
     <div class="notifications-list" id="notificationsList">
         <!-- Уведомления будут здесь -->
@@ -20,43 +22,160 @@
     position: relative;
     cursor: pointer;
     font-size: 24px;
+    color: #2c3e50;
+    transition: color 0.3s ease;
+}
+
+.notification-icon:hover {
+    color: #4CAF50;
 }
 
 .badge {
     position: absolute;
-    top: -5px;
-    right: -5px;
-    background: red;
+    top: -8px;
+    right: -8px;
+    background: #e74c3c;
     color: white;
     border-radius: 50%;
-    padding: 2px 6px;
+    padding: 3px 6px;
     font-size: 12px;
+    font-weight: bold;
+    min-width: 18px;
+    text-align: center;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
 }
 
 .notifications-popup {
     position: absolute;
-    top: 50px;
+    top: 60px;
     right: 20px;
-    width: 350px;
+    width: 380px;
     background: white;
-    border: 1px solid #ddd;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.15);
     z-index: 1000;
-    max-height: 500px;
+    max-height: 600px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+.notifications-header {
+    padding: 15px 20px;
+    background: #f8f9fa;
+    border-bottom: 1px solid #eee;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.notifications-header h3 {
+    margin: 0;
+    color: #2c3e50;
+    font-size: 18px;
+}
+
+.mark-all-btn {
+    background: none;
+    border: none;
+    color: #4CAF50;
+    cursor: pointer;
+    padding: 5px 10px;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    transition: all 0.3s ease;
+}
+
+.mark-all-btn:hover {
+    color: #388E3C;
+}
+
+.notifications-list {
     overflow-y: auto;
+    max-height: 500px;
+    padding: 10px 0;
 }
 
 .notification-item {
-    padding: 10px;
+    padding: 15px 20px;
     border-bottom: 1px solid #eee;
+    transition: all 0.3s ease;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
 }
 
 .notification-item.unread {
     background: #f8f9fa;
+    border-left: 4px solid #4CAF50;
 }
 
 .notification-item:hover {
     background: #f1f1f1;
+}
+
+.notification-content {
+    color: #2c3e50;
+    font-size: 14px;
+    line-height: 1.4;
+}
+
+.notification-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 12px;
+    color: #666;
+}
+
+.notification-time {
+    color: #888;
+}
+
+.mark-read-btn {
+    background: none;
+    border: 1px solid #4CAF50;
+    color: #4CAF50;
+    padding: 4px 8px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 12px;
+    transition: all 0.3s ease;
+}
+
+.mark-read-btn:hover {
+    background: #4CAF50;
+    color: white;
+}
+
+/* Анимации */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.notifications-popup {
+    animation: fadeIn 0.3s ease;
+}
+
+/* Стили для скроллбара */
+.notifications-list::-webkit-scrollbar {
+    width: 6px;
+}
+
+.notifications-list::-webkit-scrollbar-track {
+    background: #f1f1f1;
+}
+
+.notifications-list::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 3px;
+}
+
+.notifications-list::-webkit-scrollbar-thumb:hover {
+    background: #555;
 }
 </style>
 
@@ -74,19 +193,65 @@ async function loadNotifications() {
         let unreadCount = 0;
         
         notifications.forEach(notif => {
+            if (!notif.isRead) unreadCount++;
+            
             const notifElement = document.createElement('div');
             notifElement.className = `notification-item ${notif.isRead ? '' : 'unread'}`;
+            
+            // Форматирование даты
+            const date = new Date(notif.createdAt);
+            const formattedDate = new Intl.DateTimeFormat('ru-RU', {
+                day: '2-digit',
+                month: '2-digit',
+                year: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            }).format(date);
+
+            // Иконка в зависимости от типа уведомления
+            let icon = '';
+            switch(notif.Type) {
+                case 'new_request':
+                    icon = '<i class="fas fa-file-alt"></i>';
+                    break;
+                case 'application_status':
+                    icon = '<i class="fas fa-info-circle"></i>';
+                    break;
+                case 'system_alert':
+                    icon = '<i class="fas fa-exclamation-triangle"></i>';
+                    break;
+                case 'response_approved':
+                    icon = '<i class="fas fa-check-circle"></i>';
+                    break;
+                case 'request_completed':
+                    icon = '<i class="fas fa-check-double"></i>';
+                    break;
+                default:
+                    icon = '<i class="fas fa-bell"></i>';
+            }
+            
             notifElement.innerHTML = `
-                <p>${notif.message}</p>
-                <small>${new Date(notif.createdAt).toLocaleString()}</small>
-                ${notif.isRead ? '' : `<button class="mark-read" data-id="${notif.id}">Прочитать</button>`}
+                <div class="notification-content">
+                    ${icon} ${notif.Message}
+                </div>
+                <div class="notification-meta">
+                    <span class="notification-time">${formattedDate}</span>
+                    ${!notif.isRead ? `
+                        <button class="mark-read-btn" data-id="${notif.NotificationId}">
+                            <i class="fas fa-check"></i> Прочитано
+                        </button>
+                    ` : ''}
+                </div>
             `;
             
             list.appendChild(notifElement);
-            if (!notif.isRead) unreadCount++;
         });
         
-        document.getElementById('notificationBadge').textContent = unreadCount;
+        // Обновляем счетчик
+        const badge = document.getElementById('notificationBadge');
+        badge.textContent = unreadCount;
+        badge.style.display = unreadCount > 0 ? 'block' : 'none';
+        
     } catch (error) {
         console.error('Ошибка загрузки уведомлений:', error);
     }
@@ -99,10 +264,20 @@ document.getElementById('notificationIcon').addEventListener('click', function()
     if (popup.style.display === 'block') loadNotifications();
 });
 
-// Исправленный обработчик для кнопок
+// Закрытие попапа при клике вне его
+document.addEventListener('click', function(e) {
+    const popup = document.getElementById('notificationsPopup');
+    const icon = document.getElementById('notificationIcon');
+    if (!popup.contains(e.target) && !icon.contains(e.target)) {
+        popup.style.display = 'none';
+    }
+});
+
+// Обработчик для кнопок "Прочитано"
 document.getElementById('notificationsList').addEventListener('click', function(e) {
-    if (e.target.classList.contains('mark-read')) {
-        const notificationId = e.target.dataset.id;
+    if (e.target.closest('.mark-read-btn')) {
+        const btn = e.target.closest('.mark-read-btn');
+        const notificationId = btn.dataset.id;
         markAsRead(notificationId);
     }
 });
@@ -119,7 +294,7 @@ async function markAsRead(notificationId) {
         loadNotifications();
     } catch (error) {
         console.error('Ошибка:', error);
-        alert('Не удалось обновить статус уведомления');
+        showToast('Не удалось обновить статус уведомления', 'error');
     }
 }
 
@@ -132,13 +307,21 @@ async function markAllAsRead() {
         loadNotifications();
     } catch (error) {
         console.error('Ошибка:', error);
-        alert('Не удалось обновить статус уведомлений');
+        showToast('Не удалось обновить статус уведомлений', 'error');
     }
+}
+
+// Функция для показа уведомлений
+function showToast(message, type = 'error') {
+    // Если у вас есть библиотека для тостов, используйте её
+    // Иначе можно просто показать alert
+    alert(message);
 }
 
 // Инициализация
 document.addEventListener('DOMContentLoaded', function() {
     loadNotifications();
+    // Обновляем каждые 30 секунд
     setInterval(loadNotifications, 30000);
 });
 </script>

@@ -7,7 +7,13 @@ module.exports = function(sequelize, DataTypes) {
       },
       ProfessionId: {
         type: DataTypes.INTEGER,
-        allowNull: false
+        allowNull: true,
+        references: {
+          model: 'Professions',
+          key: 'ProfessionId'
+        },
+        onDelete: 'CASCADE',
+        onUpdate: 'CASCADE'
       },
       Name: {
         type: DataTypes.STRING(1000),
@@ -36,6 +42,7 @@ module.exports = function(sequelize, DataTypes) {
     }, {
       sequelize,
       tableName: 'Master',
+      schema: 'dbo',
       timestamps: false
     });
   };

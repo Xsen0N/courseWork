@@ -412,17 +412,50 @@ class ProfileController {
 
     async editOrder(req, res) { 
         const { enrollmentId, actionType, comment } = req.body;
+        let startDate;
         try {
             if (!req.session.masterId) {
                 return res.status(403).send('Необходима регистрация');
             }
             const master = await models.masters.findByPk(req.session.masterId);
-            const enrl = await models.menrollmentasters.findByPk(enrollmentId);
+            const enrl = await models.enrollment.findByPk(enrollmentId);
             if (!master) {
                 return res.status(404).send('Мастер не найден');
             }
-            const startDate = new Date(`${enrl.Date}T${enrl.Time}`);
-            const endDate = new Date(startDate.getTime() + enrl.Duration * 60000);
+            if (!enrl.Date || !enrl.Time) {
+                throw new Error("Дата или время не указаны");
+            }
+
+            // Получаем дату и время из записи
+            const datePart = enrl.Date;
+            const timePart = enrl.Time;
+
+            // Преобразуем время в строку, если оно не строка
+            const timeStr = typeof timePart === 'string' ? timePart : 
+                          (timePart instanceof Date ? 
+                            `${timePart.getHours().toString().padStart(2, '0')}:${timePart.getMinutes().toString().padStart(2, '0')}` : 
+                            '00:00');
+
+            const [hours, minutes] = timeStr.split(':');
+            
+            // Создаем дату в локальном часовом поясе
+            startDate = new Date(datePart);
+            startDate.setHours(parseInt(hours, 10), parseInt(minutes, 10), 0);
+
+            if (isNaN(startDate)) {
+                console.error('Debug - Date:', datePart);
+                console.error('Debug - Time:', timeStr);
+                throw new Error("Некорректная дата или время");
+            }
+
+            // Создаем дату окончания, добавляя часы вместо минут
+            const durationInHours = enrl.Duration;
+            const endDate = new Date(startDate.getTime() + (durationInHours * 60 * 60 * 1000));
+
+            // Для отладки
+            console.log("StartDate:", startDate.toISOString());
+            console.log("EndDate:", endDate.toISOString());
+
             if (actionType === 'reject') {
                 await models.enrollment.update(
                     { Status: 2, Comments: comment }, 
@@ -434,18 +467,12 @@ class ProfileController {
                     { where: { EnrollmentId: enrollmentId } }
                 );
 
-            // await models.scheduler.create({
-            //     EnrollmentId: enrollmentId,
-            //     ApprovedTime: new Date()
-            // });
-
-            await models.events.create({
-                MasterId: req.session.masterId,
-                StartDate: startDate,
-                EndDate: endDate,
-                Status: 0
-            });
-            
+                await models.events.create({
+                    MasterId: req.session.masterId,
+                    StartDate: startDate,
+                    EndDate: endDate,
+                    Status: 1
+                });
             }  
             res.status(200).send('Успешно обновлено');
         } catch (error) {
@@ -459,63 +486,94 @@ class ProfileController {
             if (!req.session.masterId) {
                 return res.status(403).send('Необходима регистрация');
             }
+            
             const master = await models.masters.findByPk(req.session.masterId);
-
             if (!master) {
                 return res.status(404).send('Мастер не найден');
             }
-            const events = await models.events.findAll({where :{
-                MasterId:req.session.masterId
-            }, raw: true});
-            // const shedulesDetailes = await models.scheduler.findAll({
-            //     include: [
-            //         {
-            //             model: models.enrollment,
-            //             where: {
-            //                 Status: 1 
-            //             },
-            //             include: [
-            //                 {
-            //                     model: models.services,
-            //                     attributes: ["MasterId", "Name"],
-            //                     where:{
-            //                         MasterId:req.session.masterId
-            //                     }
-            //                 }, {
-            //                     model: models.users,
-            //                     attributes:["ID", "Login", "Email"]
-            //                 }
-            //             ],
-            //         }
-            //     ],
-            //     raw: true
-            // });
-            // const schedules = shedulesDetailes.map(scheduleDetail => ({
-            //     ServiceId: scheduleDetail['Enrollment.Service.ServiceId'], // ID услуги
-            //     Name: scheduleDetail['Enrollment.Service.Name'], // Название услуги
-            //     ApprovedTime: scheduleDetail.ApprovedTime, // Время утверждения
-            //     MasterId: scheduleDetail['Enrollment.Service.MasterId'], // ID мастера
-            //     User: {
-            //         ID: scheduleDetail['Enrollment.User.ID'], // ID пользователя
-            //         Login: scheduleDetail['Enrollment.User.Login'], // Логин пользователя
-            //         Email: scheduleDetail['Enrollment.User.Email'], // Email пользователя
-            //     },
-            //     Enrollment: {
-            //         EnrollmentId: scheduleDetail['Enrollment.EnrollmentId'], // ID записи
-            //         Status: scheduleDetail['Enrollment.Status'], // Статус записи
-            //         Date: scheduleDetail['Enrollment.Date'], // Дата услуги
-            //         Time: scheduleDetail['Enrollment.Time'], // Время услуги
-            //         Duration: scheduleDetail['Enrollment.Duration'], // Длительность услуги
-            //         Comments: scheduleDetail['Enrollment.Comments'], // Комментарии
-            //         Address: scheduleDetail['Enrollment.Address']
-            //     }
-            // }));
-            res.render("./layouts/profileShedules.hbs", { layout: "profileShedules.hbs", shedulesDetailes: events });
-        } catch (error) {
-            console.error('Ошибка при открытии страницы с классами:', error);
-            res.status(500).send('Произошла ошибка при открытии страницы с классами');
-        }
+    
+            // Получаем события мастера
+            const events = await models.events.findAll({
+                where: { MasterId: req.session.masterId },
+                raw: false
+            });
+    
+            // Получаем все подтвержденные записи мастера
+            const enrollments = await models.enrollment.findAll({
+                include: [
+                    {
+                        model: models.services,
+                        where: { MasterId: req.session.masterId },
+                        attributes: ["Name", "Description"]
+                    },
+                    {
+                        model: models.users,
+                        attributes: ["Login", "Email"]
+                    }
+                ],
+                where: { Status: 1 }, // Только подтвержденные записи
+                raw: false
+            });
 
+            // Сопоставляем события и записи по дате/времени
+            const formattedEvents = events.map(event => {
+                // Находим соответствующую запись
+                const matchingEnrollment = enrollments.find(enrl => {
+                    const enrollmentDateTime = new Date(enrl.Date + 'T' + enrl.Time);
+                    const enrollmentEndTime = new Date(enrollmentDateTime.getTime() + enrl.Duration * 60 * 60 * 1000);
+                    
+                    return event.StartDate.getTime() === enrollmentDateTime.getTime() &&
+                           event.EndDate.getTime() === enrollmentEndTime.getTime();
+                });
+
+                // Форматируем даты
+                const startDate = event.StartDate instanceof Date ? event.StartDate : new Date(event.StartDate);
+                const endDate = event.EndDate instanceof Date ? event.EndDate : new Date(event.EndDate);
+
+                // Для отладки
+                console.log('Event:', {
+                    EventId: event.EventId,
+                    StartDate: startDate,
+                    EndDate: endDate,
+                    MatchingEnrollment: matchingEnrollment ? {
+                        EnrollmentId: matchingEnrollment.EnrollmentId,
+                        Date: matchingEnrollment.Date,
+                        Time: matchingEnrollment.Time,
+                        Duration: matchingEnrollment.Duration
+                    } : null
+                });
+
+                return {
+                    EventId: event.EventId,
+                    StartDate: startDate.toISOString(),
+                    EndDate: endDate.toISOString(),
+                    Service: matchingEnrollment?.service ? {
+                        Name: matchingEnrollment.service.Name,
+                        Description: matchingEnrollment.service.Description
+                    } : null,
+                    User: matchingEnrollment?.user ? {
+                        Login: matchingEnrollment.user.Login,
+                        Email: matchingEnrollment.user.Email
+                    } : null,
+                    Enrollment: matchingEnrollment ? {
+                        Comments: matchingEnrollment.Comments,
+                        Address: matchingEnrollment.Address
+                    } : null
+                };
+            });
+
+            // Для отладки
+            console.log('Formatted Events:', JSON.stringify(formattedEvents, null, 2));
+    
+            res.render("./layouts/profileShedules.hbs", {
+                layout: "profileShedules.hbs",
+                shedulesDetailes: formattedEvents,
+                masterName: master.Name
+            });
+        } catch (error) {
+            console.error('Ошибка при открытии страницы расписания:', error);
+            res.status(500).send('Произошла ошибка при открытии страницы расписания');
+        }
     }
 
     async addCriteria(req, res) {
@@ -598,6 +656,267 @@ class ProfileController {
             return res.status(500).json({ 
                 error: 'Внутренняя ошибка сервера',
                 details: process.env.NODE_ENV === 'development' ? error.message : null
+            });
+        }
+    }
+
+    async getSpecialistRequestsPage(req, res) {
+        try {
+            const masterId = req.session.masterId;
+            
+            if (!masterId) {
+                return res.status(403).render('./layouts/error.hbs', { 
+                    layout: "error.hbs", 
+                    errorMessage: 'Доступ запрещен' 
+                });
+            }
+
+            // Получаем информацию о специалисте с его профессиями
+            const master = await models.masters.findOne({
+                where: { MasterId: masterId },
+                include: [
+                    {
+                        model: models.professions,
+                        attributes: ['ProfessionId', 'ProfessionName'],
+                        through: { attributes: [] }
+                    },
+                    {
+                        model: models.services,
+                        attributes: ['ServiceId', 'TypeId'],
+                        include: [{
+                            model: models.types,
+                            attributes: ['TypeId', 'TypeName']
+                        }]
+                    }
+                ]
+            });
+
+            if (!master) {
+                return res.status(404).render('./layouts/error.hbs', { 
+                    layout: "error.hbs", 
+                    errorMessage: 'Специалист не найден' 
+                });
+            }
+
+            // Получаем ID профессий специалиста
+            const masterProfessionIds = master.professions.map(p => p.ProfessionId);
+            
+            // Получаем уникальные TypeId из услуг специалиста
+            const masterTypeIds = [...new Set(master.services.map(service => service.TypeId))];
+
+            // Получаем заявки, соответствующие типам услуг и профессиям специалиста
+            const requests = await models.requests.findAll({
+                where: {
+                    TypeId: { [Op.in]: masterTypeIds },
+                    Status: { [Op.in]: ['pending', 'in_progress'] }
+                },
+                include: [
+                    { 
+                        model: models.types,
+                        required: true,
+                        attributes: ['TypeId', 'TypeName']
+                    },
+                    {
+                        model: models.professions,
+                        required: true,
+                        attributes: ['ProfessionId', 'ProfessionName'],
+                        through: {
+                            model: models.requestProfession,
+                            where: {
+                                ProfessionId: { [Op.in]: masterProfessionIds },
+                                // Проверяем, что еще требуются специалисты
+                                [Op.or]: [
+                                    { status: 'pending' },
+                                    {
+                                        status: 'partially_approved',
+                                        approved: {
+                                            [Op.lt]: models.Sequelize.col('required')
+                                        }
+                                    }
+                                ]
+                            },
+                            attributes: ['required', 'approved', 'status']
+                        }
+                    },
+                    {
+                        model: models.users,
+                        attributes: ['UserId', 'Name', 'Email']
+                    },
+                    {
+                        model: models.responses,
+                        required: false,
+                        where: {
+                            MasterId: masterId
+                        },
+                        attributes: ['ResponseId', 'status']
+                    }
+                ],
+                order: [['Date', 'DESC']]
+            });
+
+            // Форматируем данные для отображения
+            const requestsWithDetails = requests.map(request => {
+                const professions = request.professions || [];
+                const hasResponded = request.responses && request.responses.length > 0;
+                
+                return {
+                    requestId: request.RequestId,
+                    date: request.Date,
+                    location: request.Location || 'Место не указано',
+                    address: request.Address || 'Адрес не указан',
+                    status: request.Status,
+                    type: request.type.TypeName,
+                    typeId: request.type.TypeId,
+                    clientName: request.user.Name,
+                    clientEmail: request.user.Email,
+                    hasResponded: hasResponded,
+                    responseStatus: hasResponded ? request.responses[0].status : null,
+                    professions: professions.map(profession => ({
+                        professionId: profession.ProfessionId,
+                        name: profession.ProfessionName,
+                        needed: profession.RequestProfession.required || 0,
+                        approved: profession.RequestProfession.approved || 0,
+                        status: profession.RequestProfession.status || 'pending'
+                    }))
+                };
+            });
+
+            // Рендерим страницу
+            return res.render("./layouts/specialistRequests.hbs", { 
+                layout: "specialistRequests.hbs", 
+                requests: requestsWithDetails,
+                helpers: {
+                    formatDate: function(date) {
+                        if (!date) return 'Дата не указана';
+                        try {
+                            const d = new Date(date);
+                            return d.toLocaleDateString('ru-RU', {
+                                year: 'numeric',
+                                month: '2-digit',
+                                day: '2-digit'
+                            });
+                        } catch (error) {
+                            return 'Дата не указана';
+                        }
+                    },
+                    eq: function(v1, v2) {
+                        return v1 === v2;
+                    }
+                }
+            });
+
+        } catch (error) {
+            console.error('Ошибка при получении заявок:', error);
+            return res.status(500).render('./layouts/error.hbs', { 
+                layout: "error.hbs", 
+                errorMessage: 'Произошла ошибка при получении заявок' 
+            });
+        }
+    }
+
+    async respondToRequest(req, res) {
+        const transaction = await models.sequelize.transaction();
+        try {
+            const { requestId, professionId } = req.body;
+            const masterId = req.session.masterId;
+
+            if (!masterId) {
+                await transaction.rollback();
+                return res.status(403).json({ 
+                    success: false, 
+                    message: 'Доступ запрещен' 
+                });
+            }
+
+            // Проверяем, не откликался ли уже специалист на эту заявку
+            const existingResponse = await models.responses.findOne({
+                where: {
+                    RequestId: requestId,
+                    MasterId: masterId,
+                    ProfessionId: professionId
+                },
+                transaction
+            });
+
+            if (existingResponse) {
+                await transaction.rollback();
+                return res.status(400).json({ 
+                    success: false, 
+                    message: 'Вы уже откликнулись на эту заявку' 
+                });
+            }
+
+            // Проверяем существование заявки и профессии
+            const request = await models.requests.findOne({
+                where: { RequestId: requestId },
+                include: [{
+                    model: models.professions,
+                    through: {
+                        model: models.requestProfession,
+                        where: { 
+                            ProfessionId: professionId,
+                            [Op.or]: [
+                                { status: 'pending' },
+                                {
+                                    status: 'partially_approved',
+                                    approved: {
+                                        [Op.lt]: models.Sequelize.col('required')
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }],
+                transaction
+            });
+
+            if (!request) {
+                await transaction.rollback();
+                return res.status(404).json({ 
+                    success: false, 
+                    message: 'Заявка не найдена или уже не принимает откликов' 
+                });
+            }
+
+            // Создаем отклик
+            const response = await models.responses.create({
+                RequestId: requestId,
+                MasterId: masterId,
+                ProfessionId: professionId,
+                status: 'pending'
+            }, { transaction });
+
+            // Обновляем статус заявки на in_progress
+            await request.update({ 
+                Status: 'in_progress' 
+            }, { transaction });
+
+            // Создаем уведомление для клиента
+            await models.notifications.create({
+                UserId: request.UserId,
+                Type: 'new_response',
+                Message: `Новый отклик на вашу заявку от специалиста`,
+                Metadata: JSON.stringify({
+                    requestId,
+                    responseId: response.ResponseId,
+                    masterId
+                }),
+                isRead: false
+            }, { transaction });
+
+            await transaction.commit();
+
+            return res.json({ 
+                success: true, 
+                message: 'Отклик успешно создан' 
+            });
+
+        } catch (error) {
+            await transaction.rollback();
+            console.error('Ошибка при создании отклика:', error);
+            return res.status(500).json({ 
+                success: false, 
+                message: 'Произошла ошибка при создании отклика' 
             });
         }
     }

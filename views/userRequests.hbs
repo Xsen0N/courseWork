@@ -1,0 +1,385 @@
+<div class="requests-container">
+    <h1 class="page-title">Мои заявки</h1>
+    
+    {{#if requests.length}}
+        {{#each requests}}
+        <div class="request-card">
+            <div class="request-header">
+                <div class="request-info">
+                    <h2>{{type}}</h2>
+                    <div class="request-details">
+                        <span><i class="fas fa-calendar"></i> {{date}}</span>
+                        <span><i class="fas fa-map-marker-alt"></i> {{location}}</span>
+                        <span class="status-badge status-{{status}}">
+                            {{#if (eq status 'pending')}}Ожидает специалистов{{/if}}
+                            {{#if (eq status 'in_progress')}}В процессе{{/if}}
+                            {{#if (eq status 'completed')}}Завершена{{/if}}
+                            {{#if (eq status 'cancelled')}}Отменена{{/if}}
+                        </span>
+                    </div>
+                </div>
+                <div class="request-progress">
+                    <div class="progress-text">
+                        Специалистов подтверждено: {{totalSpecialistsApproved}} из {{totalSpecialistsNeeded}}
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress" style="width: {{multiply (divide totalSpecialistsApproved totalSpecialistsNeeded) 100}}%"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="professions-list">
+                {{#each professions}}
+                <div class="profession-section">
+                    <h3>{{name}} (требуется: {{needed}}, подтверждено: {{approved}})</h3>
+                    
+                    {{#if responses.length}}
+                    <div class="responses-grid">
+                        {{#each responses}}
+                        <div class="specialist-card {{#if (eq status 'approved')}}approved{{/if}}">
+                            <div class="specialist-info">
+                                <h4>{{masterName}}</h4>
+                                <div class="rating">
+                                    {{#times masterRating}}
+                                    <i class="fas fa-star"></i>
+                                    {{/times}}
+                                    {{#times (subtract 5 masterRating)}}
+                                    <i class="far fa-star"></i>
+                                    {{/times}}
+                                </div>
+                                <p>{{masterDescription}}</p>
+                                <a href="/masters/{{masterId}}" class="btn btn-info" target="_blank">
+                                    <i class="fas fa-user"></i> Профиль специалиста
+                                </a>
+                            </div>
+                            
+                            {{#if (eq status 'pending')}}
+                            <div class="specialist-actions">
+                                <button class="btn btn-approve" onclick="approveSpecialist('{{responseId}}')">
+                                    Подтвердить
+                                </button>
+                                <button class="btn btn-reject" onclick="rejectSpecialist('{{responseId}}')">
+                                    Отклонить
+                                </button>
+                            </div>
+                            {{else}}
+                            <div class="specialist-status">
+                                {{#if (eq status 'approved')}}
+                                <span class="status-approved"><i class="fas fa-check-circle"></i> Подтвержден</span>
+                                {{else}}
+                                <span class="status-rejected"><i class="fas fa-times-circle"></i> Отклонен</span>
+                                {{/if}}
+                            </div>
+                            {{/if}}
+                        </div>
+                        {{/each}}
+                    </div>
+                    {{else}}
+                    <p class="no-responses">Пока нет откликов от специалистов</p>
+                    {{/if}}
+                </div>
+                {{/each}}
+            </div>
+        </div>
+        {{/each}}
+    {{else}}
+    <div class="no-requests">
+        <i class="fas fa-clipboard-list"></i>
+        <p>У вас пока нет активных заявок</p>
+        <a href="/requests/new" class="btn btn-primary">Создать заявку</a>
+    </div>
+    {{/if}}
+</div>
+
+<style>
+.requests-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.page-title {
+    font-size: 2rem;
+    color: #2c3e50;
+    margin-bottom: 30px;
+}
+
+.request-card {
+    background: white;
+    border-radius: 10px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    margin-bottom: 30px;
+    overflow: hidden;
+}
+
+.request-header {
+    padding: 20px;
+    background: #f8f9fa;
+    border-bottom: 1px solid #eee;
+}
+
+.request-info h2 {
+    margin: 0;
+    color: #2c3e50;
+    font-size: 1.5rem;
+}
+
+.request-details {
+    margin-top: 10px;
+    display: flex;
+    gap: 20px;
+    color: #666;
+}
+
+.request-details span {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.status-badge {
+    padding: 5px 10px;
+    border-radius: 15px;
+    font-size: 0.9rem;
+}
+
+.status-pending { background: #ffeeba; color: #856404; }
+.status-in_progress { background: #b8daff; color: #004085; }
+.status-completed { background: #c3e6cb; color: #155724; }
+.status-cancelled { background: #f5c6cb; color: #721c24; }
+
+.request-progress {
+    margin-top: 15px;
+}
+
+.progress-text {
+    margin-bottom: 5px;
+    color: #666;
+}
+
+.progress-bar {
+    height: 8px;
+    background: #e9ecef;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.progress {
+    height: 100%;
+    background: #4CAF50;
+    transition: width 0.3s ease;
+}
+
+.professions-list {
+    padding: 20px;
+}
+
+.profession-section {
+    margin-bottom: 30px;
+}
+
+.profession-section h3 {
+    color: #2c3e50;
+    margin-bottom: 15px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid #eee;
+}
+
+.responses-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 20px;
+}
+
+.specialist-card {
+    background: #f8f9fa;
+    border-radius: 8px;
+    padding: 15px;
+    transition: transform 0.3s ease;
+}
+
+.specialist-card:hover {
+    transform: translateY(-5px);
+}
+
+.specialist-card.approved {
+    background: #e8f5e9;
+}
+
+.specialist-info h4 {
+    margin: 0 0 10px 0;
+    color: #2c3e50;
+}
+
+.rating {
+    color: #ffc107;
+    margin-bottom: 10px;
+}
+
+.specialist-info p {
+    color: #666;
+    font-size: 0.9rem;
+    margin: 0;
+}
+
+.specialist-actions {
+    margin-top: 15px;
+    display: flex;
+    gap: 10px;
+}
+
+.btn {
+    padding: 8px 15px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: background-color 0.3s ease;
+}
+
+.btn-approve {
+    background: #4CAF50;
+    color: white;
+}
+
+.btn-approve:hover {
+    background: #388E3C;
+}
+
+.btn-reject {
+    background: #f44336;
+    color: white;
+}
+
+.btn-reject:hover {
+    background: #d32f2f;
+}
+
+.specialist-status {
+    margin-top: 15px;
+    text-align: center;
+}
+
+.status-approved {
+    color: #4CAF50;
+}
+
+.status-rejected {
+    color: #f44336;
+}
+
+.no-responses {
+    text-align: center;
+    color: #666;
+    padding: 20px;
+    background: #f8f9fa;
+    border-radius: 8px;
+}
+
+.no-requests {
+    text-align: center;
+    padding: 50px 20px;
+    color: #666;
+}
+
+.no-requests i {
+    font-size: 3rem;
+    margin-bottom: 20px;
+    color: #ddd;
+}
+
+.btn-primary {
+    background: #2c3e50;
+    color: white;
+    text-decoration: none;
+    display: inline-block;
+    margin-top: 20px;
+}
+
+.btn-primary:hover {
+    background: #34495e;
+}
+
+.btn-info {
+    background: #17a2b8;
+    color: white;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    margin-top: 10px;
+}
+
+.btn-info:hover {
+    background: #138496;
+    color: white;
+    text-decoration: none;
+}
+
+@media (max-width: 768px) {
+    .request-details {
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .responses-grid {
+        grid-template-columns: 1fr;
+    }
+}
+</style>
+
+<script>
+// Функция для подтверждения специалиста
+async function approveSpecialist(responseId) {
+    try {
+        const response = await fetch('/requests/approve-specialist', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ responseId })
+        });
+
+        const data = await response.json();
+        
+        if (data.success) {
+            // Перезагружаем страницу для обновления данных
+            window.location.reload();
+        } else {
+            alert(data.message || 'Произошла ошибка при подтверждении специалиста');
+        }
+    } catch (error) {
+        console.error('Ошибка:', error);
+        alert('Произошла ошибка при подтверждении специалиста');
+    }
+}
+
+// Функция для отклонения специалиста
+async function rejectSpecialist(responseId) {
+    if (!confirm('Вы уверены, что хотите отклонить этого специалиста?')) {
+        return;
+    }
+
+    try {
+        const response = await fetch('/requests/reject-specialist', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ responseId })
+        });
+
+        const data = await response.json();
+        
+        if (data.success) {
+            // Перезагружаем страницу для обновления данных
+            window.location.reload();
+        } else {
+            alert(data.message || 'Произошла ошибка при отклонении специалиста');
+        }
+    } catch (error) {
+        console.error('Ошибка:', error);
+        alert('Произошла ошибка при отклонении специалиста');
+    }
+}
+</script> 

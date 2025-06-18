@@ -6,139 +6,281 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" href="/css/chat.css">
     <title>Главная страница</title>
-    <style>
-        /* Обновленные стили */
-        body {
-            font-family: 'Roboto', sans-serif;
-            margin: 0;
-            padding: 0;
-            background: #f8f9fa;
-            color: #2c3e50;
+<style>
+    /* Основные стили */
+    body {
+        font-family: 'Roboto', sans-serif;
+        margin: 0;
+        padding: 0;
+        background: linear-gradient(135deg, #f0f5ff 0%, #e6f0ff 25%, #f9f7ff 50%, #f5f0ff 75%, #f0f5ff 100%);
+        background-size: 400% 400%;
+        animation: gradientBG 20s ease infinite;
+        color: #1a202c;
+        line-height: 1.6;
+    }
+
+    .container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 20px;
+    }
+
+    /* Заголовки секций */
+    .section-header {
+        text-align: center;
+        padding: 40px 0 20px;
+    }
+
+    .section-header h1 {
+        font-size: 2.5rem;
+        color: #2d3748;
+        margin-bottom: 15px;
+    }
+
+    .section-header h2 {
+        font-size: 2rem;
+        color: #2d3748;
+        margin-bottom: 15px;
+    }
+
+    .section-header p {
+        color: #4a5568;
+        font-size: 1.1rem;
+    }
+
+    /* Типы мероприятий */
+    .types-container {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 20px;
+        margin-bottom: 40px;
+    }
+
+    .type-card {
+        background: white;
+        border-radius: 10px;
+        padding: 20px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        transition: transform 0.3s ease;
+    }
+
+    .type-card:hover {
+        transform: translateY(-5px);
+    }
+
+    .type-card h3 {
+        color: #2d3748;
+        margin-bottom: 10px;
+    }
+
+    .type-card p {
+        color: #4a5568;
+    }
+
+    /* Специалисты */
+    .masters-container {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 20px;
+        margin-bottom: 40px;
+    }
+
+    .master-card {
+        background: white;
+        border-radius: 10px;
+        padding: 20px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        transition: transform 0.3s ease;
+    }
+
+    .master-card:hover {
+        transform: translateY(-5px);
+    }
+
+    .master-card h3 {
+        color: #2d3748;
+        margin-bottom: 10px;
+    }
+
+    .master-card p {
+        color: #4a5568;
+        margin-bottom: 15px;
+    }
+
+    .master-info {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        font-size: 0.9rem;
+    }
+
+    .master-price, .master-type {
+        background: #f7fafc;
+        padding: 5px 10px;
+        border-radius: 15px;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+    }
+
+    .master-price i, .master-type i {
+        color: #4a5568;
+    }
+
+    /* Анимации */
+    @keyframes gradientBG {
+        0% { background-position: 0% 50%; }
+        50% { background-position: 100% 50%; }
+        100% { background-position: 0% 50%; }
+    }
+
+    /* Адаптивность */
+    @media (max-width: 768px) {
+        .section-header h1 {
+            font-size: 2rem;
         }
 
         .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 20px;
+            padding: 10px;
         }
+    }
 
-        .section-header {
-            text-align: center;
-            padding: 40px 20px;
-            margin: 30px 0;
-            position: relative;
-        }
+    /* Стили для фильтров */
+    .filters-section {
+        background: white;
+        padding: 20px;
+        border-radius: 10px;
+        margin-bottom: 30px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
 
-        .section-header h2 {
-            font-size: 2.2rem;
-            margin-bottom: 15px;
-            color: #34495e;
-            position: relative;
-            display: inline-block;
-        }
+    .filters-title {
+        font-size: 1.2rem;
+        color: #2d3748;
+        margin-bottom: 15px;
+    }
 
-        .section-header h2::after {
-            content: '';
-            position: absolute;
-            bottom: -10px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 60px;
-            height: 3px;
-            background: #3498db;
-        }
+    .filters-container {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 20px;
+    }
 
-        /* Общие стили карточек */
-        .card-container {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 25px;
-            padding: 20px 0;
-        }
+    .filter-group {
+        flex: 1;
+        min-width: 250px;
+    }
 
-        .card {
-            background: #fff;
-            border-radius: 15px;
-            padding: 25px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
-            transition: all 0.3s ease;
-            position: relative;
-            overflow: hidden;
-        }
+    .filter-group h4 {
+        font-size: 1rem;
+        color: #4a5568;
+        margin-bottom: 10px;
+    }
 
-        .card:hover {
-            transform: translateY(-8px);
-            box-shadow: 0 10px 25px rgba(0,0,0,0.12);
-        }
+    .criteria-options {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+    }
 
-        /* Специфичные стили для типов */
-        .type-card {
-            border-bottom: 4px solid #3498db;
-        }
+    .criteria-checkbox {
+        display: none;
+    }
 
-        .type-card i {
-            color: #3498db;
-            font-size: 2.2rem;
-            margin-bottom: 20px;
-        }
+    .criteria-label {
+        display: inline-block;
+        padding: 8px 16px;
+        background: #f7fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 20px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        font-size: 0.9rem;
+        color: #4a5568;
+    }
 
-        /* Стили для профессий */
-        .profession-card {
-            border-bottom: 4px solid #2ecc71;
-        }
+    .criteria-checkbox:checked + .criteria-label {
+        background: #4361ee;
+        color: white;
+        border-color: #4361ee;
+    }
 
-        .profession-card i {
-            color: #2ecc71;
-            font-size: 2.2rem;
-            margin-bottom: 15px;
-        }
+    .type-select {
+        width: 100%;
+        padding: 10px;
+        border: 1px solid #e2e8f0;
+        border-radius: 8px;
+        font-size: 0.9rem;
+        color: #4a5568;
+        background-color: white;
+    }
 
-        .profession-meta {
-            margin-top: 15px;
-            padding-top: 15px;
-            border-top: 1px solid #eee;
-        }
+    .apply-filters {
+        display: block;
+        width: 100%;
+        padding: 12px;
+        background: #4361ee;
+        color: white;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        font-size: 1rem;
+        transition: background-color 0.3s ease;
+        margin-top: 20px;
+    }
 
-        .badge {
-            display: inline-block;
-            padding: 6px 12px;
-            border-radius: 20px;
-            font-size: 0.85rem;
-            margin: 3px;
-        }
+    .apply-filters:hover {
+        background: #3651d4;
+    }
 
-        .salary-badge {
-            background: rgba(52, 152, 219, 0.1);
-            color: #3498db;
-        }
+    .reset-filters {
+        display: block;
+        width: 100%;
+        padding: 12px;
+        background: #e2e8f0;
+        color: #4a5568;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        font-size: 1rem;
+        transition: background-color 0.3s ease;
+        margin-top: 10px;
+    }
 
-        .skill-badge {
-            background: rgba(46, 204, 113, 0.1);
-            color: #27ae60;
-        }
+    .reset-filters:hover {
+        background: #cbd5e0;
+    }
 
-        /* Анимации */
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
+    /* Анимация для карточек при фильтрации */
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
 
-        .card {
-            animation: fadeIn 0.6s ease-out forwards;
-        }
+    .master-card {
+        animation: fadeIn 0.5s ease forwards;
+    }
 
-        /* Адаптивность */
-        @media (max-width: 768px) {
-            .section-header h2 {
-                font-size: 1.8rem;
-            }
-            
-            .card {
-                padding: 20px;
-            }
-        }
-    </style>
+    /* Индикатор загрузки */
+    .loading {
+        text-align: center;
+        padding: 20px;
+        display: none;
+    }
+
+    .loading i {
+        font-size: 2rem;
+        color: #4361ee;
+        animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
+    }
+</style>
 </head>
 
 <body>
@@ -147,47 +289,39 @@
     <div class="container">
         <!-- Основной заголовок -->
         <div class="section-header">
-            <h1>Платформа для подбора персонала</h1>
-            <p>Найдите профессионалов для вашего мероприятия быстро и просто</p>
+            <h1>Платформа для подбора специалистов</h1>
+            <p>Найдите профессионалов для вашего мероприятия</p>
         </div>
 
-        <!-- Секция типов -->
+        <!-- Типы мероприятий -->
         <div class="section-header">
-            <h2>Категории услуг</h2>
+            <h2>Типы мероприятий</h2>
         </div>
-        <div class="card-container">
+        <div class="types-container">
             {{#each types}}
-            <div class="card type-card">
-                <i class="fas fa-users"></i>
+            <div class="type-card">
                 <h3>{{TypeName}}</h3>
                 <p>{{Description}}</p>
             </div>
             {{/each}}
         </div>
 
-        <!-- Секция профессий -->
+        <!-- Специалисты -->
         <div class="section-header">
-            <h2>Популярные профессии</h2>
+            <h2>Наши специалисты</h2>
         </div>
-        <div class="card-container">
-            {{#each professions}}
-            <div class="card profession-card">
-                <i class="fas fa-user-tie"></i>
-                <h3>{{ProfessionName}}</h3>
+        <div class="masters-container">
+            {{#each masters}}
+            <div class="master-card">
+                <h3>{{Name}}</h3>
                 <p>{{Description}}</p>
-                
-                <div class="profession-meta">
-                    {{#if AverageSalary}}
-                    <span class="badge salary-badge">
-                        <i class="fas fa-coins"></i> {{AverageSalary}} ₽/час
-                    </span>
-                    {{/if}}
-                    
-                    {{#if RequiredSkills}}
-                    <div style="margin-top: 10px;">
-                        {{#each (split RequiredSkills ',')}}
-                        <span class="badge skill-badge">{{this}}</span>
-                        {{/each}}
+                <div class="master-info">
+                    <div class="master-price">
+                        <i class="fas fa-coins"></i> {{PriceForHour}} ₽/час
+                    </div>
+                    {{#if TypeName}}
+                    <div class="master-type">
+                        <i class="fas fa-calendar-alt"></i> {{TypeName}}
                     </div>
                     {{/if}}
                 </div>
@@ -196,37 +330,15 @@
         </div>
     </div>
 
+    <script src="/js/chat.js"></script>
     <script>
-        // Обновленный скрипт с подтверждением
-        document.addEventListener('keydown', function(event) {
-            if (event.ctrlKey && event.altKey && event.key === 'a') {
-                if (confirm('Вы уверены, что хотите перейти в админ-панель?')) {
-                    fetch('/auth/registerAdmin')
-                        .then(response => {
-                            if (response.ok) window.location.href = '/auth/registerAdmin';
-                            else console.error('Ошибка доступа');
-                        })
-                        .catch(console.error);
-                }
+        document.addEventListener('keydown', function(e) {
+            if (e.ctrlKey && e.altKey && e.key.toLowerCase() === 'a') {
+                e.preventDefault();
+                window.location.href = '/auth/registerAdmin';
             }
-        });
-
-        // Анимация при скролле
-        const cards = document.querySelectorAll('.card');
-        const observer = new IntersectionObserver(entries => {
-            entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                    entry.target.style.opacity = 1;
-                    entry.target.style.transform = 'translateY(0)';
-                }
-            });
-        }, { threshold: 0.1 });
-
-        cards.forEach(card => {
-            card.style.opacity = 0;
-            card.style.transform = 'translateY(20px)';
-            observer.observe(card);
         });
     </script>
 </body>
-</html>
+
+</html> 

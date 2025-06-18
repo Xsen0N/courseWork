@@ -8,15 +8,31 @@ const hbs = require('express-handlebars').create({
         goBack: () => 'window.location.href = \'/\'',
         eq: (a, b) => a === b,
         formatDate: function(date) {
-            const options = { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' };
-            return new Date(date).toLocaleDateString('ru-RU', options);
+            if (!date) return '';
+            return new Date(date).toLocaleDateString('ru-RU', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+            });
+        },
+        formatTime: function(date) {
+            if (!date) return '';
+            return new Date(date).toLocaleTimeString('ru-RU', {
+                hour: '2-digit',
+                minute: '2-digit',
+                hour12: false
+            });
+        },
+        formatISO: function(date) {
+            if (!date) return '';
+            return new Date(date).toISOString();
         },
         split: function(str, options) {
             if (typeof str !== 'string') return [];
             const delimiter = options.hash.delimiter || ',';
             return str.split(delimiter).map(s => s.trim());
-          },
-         or:  (a, b, options) =>a || b
+        },
+        or: (a, b, options) => a || b
     }
 });
 const path = require('path');
@@ -42,12 +58,14 @@ app.use(bodyParser.json());
 // Настройка Handlebars
 app.engine('.hbs', hbs.engine);
 app.set('view engine', '.hbs');
+app.set('views', path.join(__dirname, 'views'));
 
 // Статические файлы
 app.use(express.static(path.join(__dirname, 'public')));
 
 // Роутинг
-app.use('/', router);
+app.use('/api', router);  // API routes
+app.use('/', router);     // Web routes
 
 // Загрузка Swagger-документации
 const swaggerDocument = YAML.load(path.join(__dirname, 'swagger.yaml'));

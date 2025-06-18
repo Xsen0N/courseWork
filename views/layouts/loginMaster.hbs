@@ -1,107 +1,231 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <title>Login Form</title>
-<style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f4f4f4;
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Вход для специалистов | EventStaff</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #4CAF50;
+            --primary-dark: #388E3C;
+            --secondary-color: #2c3e50;
+            --text-color: #333;
+            --error-color: #e74c3c;
+            --success-color: #2ecc71;
+            --background-color: #f5f5f5;
+        }
+
+        * {
             margin: 0;
             padding: 0;
-            height: 100vh;
+            box-sizing: border-box;
+            font-family: 'Roboto', sans-serif;
+        }
+
+        body {
+            min-height: 100vh;
             display: flex;
             justify-content: center;
             align-items: center;
-        }
-
-        .container {
-            background-color: #fff;
-            border-radius: 5px;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            background: linear-gradient(135deg, var(--secondary-color), #1a2a3a);
             padding: 20px;
-            width: 300px;
         }
 
-        .container label {
-            display: block;
-            margin-bottom: 10px;
-        }
-
-        .container input[type="text"],
-        .container input[type="password"] {
+        .login-container {
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
             width: 100%;
-            padding: 10px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-            margin-bottom: 20px;
-            box-sizing: border-box;
+            max-width: 400px;
+            position: relative;
+            overflow: hidden;
         }
 
-        .container .buttons {
-            display: flex;
-            justify-content: space-between;
+        .login-container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -50%;
+            width: 100%;
+            height: 4px;
+            background: linear-gradient(90deg, transparent, var(--primary-color), transparent);
+            animation: loading 2s linear infinite;
         }
 
-        .container button {
-            width: 48%;
-            padding: 10px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            transition: background-color 0.3s;
+        @keyframes loading {
+            0% { left: -50%; }
+            100% { left: 100%; }
         }
 
-        .container button.btn-primary {
-            background-color: #007bff;
-            color: #fff;
+        .form-header {
+            text-align: center;
+            margin-bottom: 30px;
         }
 
-        .container button.btn-primary:hover {
-            background-color: #0056b3;
-        }
-
-        .container button.btn-secondary {
-            background-color: #6c757d;
-            color: #fff;
-        }
-
-        .container button.btn-secondary:hover {
-            background-color: #5a6268;
-        }
-                a{
-            color: rgb(32, 36, 155);
-            text-decoration: none;
-            text-align:right;
+        .form-header h1 {
+            color: var(--secondary-color);
+            font-size: 2em;
             margin-bottom: 10px;
-            
+        }
+
+        .form-header p {
+            color: #666;
+            font-size: 0.9em;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+            position: relative;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            outline: none;
+            color: var(--text-color);
+        }
+
+        .form-group input:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.1);
+        }
+
+        .form-group label {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: white;
+            padding: 0 5px;
+            color: #666;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            pointer-events: none;
+        }
+
+        .form-group input:focus + label,
+        .form-group input:not(:placeholder-shown) + label {
+            top: 0;
+            font-size: 12px;
+            color: var(--primary-color);
+        }
+
+        .form-group i {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #666;
+        }
+
+        .submit-btn {
+            width: 100%;
+            padding: 15px;
+            background: var(--primary-color);
+            border: none;
+            border-radius: 8px;
+            color: white;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-bottom: 20px;
+        }
+
+        .submit-btn:hover {
+            background: var(--primary-dark);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .submit-btn:active {
+            transform: translateY(0);
+        }
+
+        .form-footer {
+            text-align: center;
+            margin-top: 20px;
+            color: #666;
+        }
+
+        .form-footer a {
+            color: var(--primary-color);
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.3s ease;
+        }
+
+        .form-footer a:hover {
+            color: var(--primary-dark);
+        }
+
+        .back-btn {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            color: white;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        .back-btn:hover {
+            transform: translateX(-5px);
+        }
+
+        @media (max-width: 480px) {
+            .login-container {
+                padding: 30px 20px;
+            }
+
+            .form-header h1 {
+                font-size: 1.8em;
+            }
+
+            .back-btn {
+                top: 10px;
+                left: 10px;
+            }
         }
     </style>
 </head>
 <body>
-    <div class="container d-flex align-items-center justify-content-center">
-<a href="/">&#8592; Назад</a>
+    <a href="/" class="back-btn">
+        <i class="fas fa-arrow-left"></i> На главную
+    </a>
+    <div class="login-container">
+        <div class="form-header">
+            <h1>Вход для специалистов</h1>
+            <p>Войдите в свой профессиональный аккаунт</p>
+        </div>
         <form action="/auth/loginMaster" method="POST">
-            <label for="username">
-                Ваше имя
-                <input class="form-control mb-2" type="text" name="username" maxlength="20" required />
-            </label>
-            <br />
-
-            <label for="password">
-                Пароль
-                <input class="form-control" type="password" name="password"  required />
-            </label>
-            <br />
-            <br />
-            <button class="btn btn-primary" type="submit" style="margin-bottom: 20px;">
-                Вход
+            <div class="form-group">
+                <input type="text" id="username" name="username" placeholder=" " required>
+                <label for="username">Имя пользователя</label>
+                <i class="fas fa-user-tie"></i>
+            </div>
+            <div class="form-group">
+                <input type="password" id="password" name="password" placeholder=" " required>
+                <label for="password">Пароль</label>
+                <i class="fas fa-lock"></i>
+            </div>
+            <button type="submit" class="submit-btn">
+                <i class="fas fa-sign-in-alt"></i> Войти
             </button>
-            <button class="btn btn-secondary ms-3" type="button" onclick="location.href = '/auth/registerMaster'">
-                Создать аккаунт
-            </button>
+            <div class="form-footer">
+                <p>Нет аккаунта? <a href="/auth/registerMaster">Зарегистрироваться как специалист</a></p>
+                <p>Вы клиент? <a href="/auth/login">Вход для клиентов</a></p>
+            </div>
         </form>
-
     </div>
 </body>
 </html>

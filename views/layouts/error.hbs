@@ -1,79 +1,79 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ru">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Error</title>
+    <title>Ошибка</title>
     <style>
-        /* Общие стили для страницы */
         body {
-            font-family: Arial, sans-serif;
+            font-family: 'Roboto', sans-serif;
             margin: 0;
             padding: 0;
-            background-color: #f9f9f9;
+            min-height: 100vh;
             display: flex;
-            justify-content: center;
+            flex-direction: column;
             align-items: center;
-            height: 100vh;
+            justify-content: center;
+            background: linear-gradient(135deg, #f5f7fa 0%, #e4e7eb 100%);
         }
 
-        /* Контейнер с ошибкой */
         .error-container {
+            background: white;
+            padding: 2rem;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
             text-align: center;
-            padding: 20px;
-            background-color: #fff;
-            border-radius: 8px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            max-width: 600px;
+            width: 90%;
         }
 
-        /* Заголовок ошибки */
-        .error-container h1 {
-            color: #e74c3c;
-            font-size: 2em;
-            margin-bottom: 20px;
+        .error-title {
+            color: #e53e3e;
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
         }
 
-        /* Текст ошибки */
-        .error-container p {
-            font-size: 1.2em;
-            color: #333;
-            margin-bottom: 20px;
+        .error-message {
+            color: #4a5568;
+            margin-bottom: 1.5rem;
         }
 
-        /* Ссылка "Назад" */
-        .go-back-link {
-            display: inline-block;
-            padding: 10px 20px;
-            background-color: #3498db;
-            color: #fff;
+        .error-details {
+            background: #f7fafc;
+            padding: 1rem;
+            border-radius: 5px;
+            margin-bottom: 1.5rem;
+            text-align: left;
+            font-family: monospace;
+            white-space: pre-wrap;
+            word-break: break-word;
+        }
+
+        .back-button {
+            background: #4299e1;
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 5px;
+            cursor: pointer;
             text-decoration: none;
-            border-radius: 4px;
-            transition: background-color 0.3s;
+            transition: background-color 0.2s;
         }
 
-        /* Стили для ссылки при наведении */
-        .go-back-link:hover {
-            background-color: #2980b9;
+        .back-button:hover {
+            background: #3182ce;
         }
     </style>
 </head>
 <body>
     <div class="error-container">
-        <h1>Error</h1>
-        <p>{{errorMessage}}</p>
-        <a href="#" class="go-back-link" onclick="goBackToPage()">Назад</a>
+        <h1 class="error-title">Произошла ошибка</h1>
+        <div class="error-message">{{message}}</div>
+        {{#if error}}
+        <div class="error-details">{{error}}</div>
+        {{/if}}
+        <a href="/" class="back-button">Вернуться на главную</a>
     </div>
-
-    <script>
-        function goBackToPage() {
-            var previousUrl = sessionStorage.getItem('previousUrl');
-            if (previousUrl) {
-                window.location.href = previousUrl;
-            } else {
-                window.history.back();
-            }
-        }
-    </script>
 </body>
 </html>
 

@@ -5,11 +5,17 @@
     <meta charset="UTF-8">
     <title>Мои заявки</title>
     <style>
-        h1 {
+        h1, h2.section-title {
             color: #333;
             text-align: center;
             margin-top: 20px;
             font-size: 2.5rem;
+        }
+
+        h2.section-title {
+            font-size: 2rem;
+            margin-top: 40px;
+            color: #007bff;
         }
 
         .card-container {
@@ -17,7 +23,9 @@
             flex-wrap: wrap;
             justify-content: center;
             gap: 20px;
-            margin-top: 30px;
+            margin: 30px auto;
+            max-width: 1200px;
+            padding: 0 20px;
         }
 
         .card {
@@ -34,43 +42,261 @@
             box-shadow: 0px 6px 20px rgba(0, 0, 0, 0.15);
         }
 
-        .card h2 {
+        .card h3 {
             color: #007bff;
             font-size: 1.5rem;
-            margin-bottom: 10px;
+            margin-bottom: 15px;
         }
 
         .card p {
             color: #555;
             font-size: 1rem;
-            margin: 5px 0;
+            margin: 8px 0;
+            line-height: 1.4;
         }
 
         .card .status {
             color: #fff;
-            background-color: #28a745;
             padding: 5px 10px;
             border-radius: 5px;
             display: inline-block;
             margin-top: 15px;
+            font-weight: 500;
         }
 
-        .cancel-button {
-            color: #rgb(0, 0, 0);
-            background-color: #fff;
-            padding: 5px 10px;
-            border-radius: 5px;
-            display: inline-block;
-            margin-top: 15px;
-        }
-
-        .card .status.pending {
+        .card .status.pending,
+        .card .status.0 {
             background-color: #ffc107;
         }
 
-        .card .status.cancelled {
+        .card .status.in_progress,
+        .card .status.1 {
+            background-color: #17a2b8;
+        }
+
+        .card .status.completed {
+            background-color: #28a745;
+        }
+
+        .card .status.cancelled,
+        .card .status.2 {
             background-color: #dc3545;
         }
+
+        .cancel-button {
+            color: #dc3545;
+            background-color: #fff;
+            padding: 8px 15px;
+            border-radius: 5px;
+            border: 1px solid #dc3545;
+            cursor: pointer;
+            display: inline-block;
+            margin-top: 15px;
+            transition: all 0.3s;
+            font-weight: 500;
+        }
+
+        .cancel-button:hover {
+            color: #fff;
+            background-color: #dc3545;
+        }
+
+        .professions-list {
+            margin-top: 15px;
+            padding: 10px;
+            background-color: #f8f9fa;
+            border-radius: 5px;
+        }
+
+        .profession-item {
+            margin: 10px 0;
+            padding: 8px;
+            border-bottom: 1px solid #dee2e6;
+        }
+
+        .profession-item:last-child {
+            border-bottom: none;
+        }
+
+        .responses-list {
+            margin-left: 15px;
+            font-size: 0.9rem;
+            color: #666;
+        }
+
+        .section-divider {
+            border-top: 2px solid #e9ecef;
+            margin: 40px auto;
+            max-width: 1200px;
+        }
+
+        .no-items-message {
+            text-align: center;
+            color: #666;
+            margin: 30px 0;
+            font-style: italic;
+        }
+
+        .rating {
+            color: #ffc107;
+            font-weight: bold;
+        }
+
+        .request-card {
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+            padding: 20px;
+            width: 100%;
+            max-width: 800px;
+        }
+
+        .request-card h3 {
+            color: #2c3e50;
+            margin-top: 0;
+            margin-bottom: 15px;
+        }
+
+        .professions-section {
+            margin-top: 15px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 4px;
+        }
+
+        .profession-item {
+            margin-bottom: 15px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .profession-item:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+
+        .masters-list {
+            margin-top: 10px;
+            padding-left: 20px;
+        }
+
+        .masters-list ul {
+            margin: 5px 0;
+            padding-left: 20px;
+        }
+
+        .masters-list li {
+            color: #666;
+            margin-bottom: 10px;
+            padding: 10px;
+            background: #fff;
+            border-radius: 4px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .specialist-card {
+            background: #fff;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 10px 0;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        .specialist-info {
+            margin-bottom: 10px;
+        }
+
+        .specialist-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .btn {
+            padding: 8px 16px;
+            border-radius: 4px;
+            border: none;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s;
+        }
+
+        .btn-approve {
+            background: #28a745;
+            color: white;
+        }
+
+        .btn-reject {
+            background: #dc3545;
+            color: white;
+        }
+
+        .btn:hover {
+            opacity: 0.9;
+        }
+
+        .specialist-status {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.9em;
+            margin-left: 10px;
+        }
+
+        .specialist-status.pending {
+            background: #ffc107;
+            color: #000;
+        }
+
+        .specialist-status.approved {
+            background: #28a745;
+            color: #fff;
+        }
+
+        .specialist-status.rejected {
+            background: #dc3545;
+            color: #fff;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 20px;
+            background: #e9ecef;
+            border-radius: 10px;
+            margin: 10px 0;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: #007bff;
+            transition: width 0.3s ease;
+        }
+.status {
+    color: #fff; /* Чёрный текст по умолчанию */
+    background-color: #6c757d; /* Серый фон, если статус не распознан */
+}
+
+.status[class="0"],
+.status.pending {
+    background-color: #ffc107; /* Жёлтый */
+    color: #000; /* Чёрный текст */
+}
+
+.status[class="1"],
+.status.approved {
+    background-color: #28a745; /* Зелёный */
+    color: #fff; /* Белый текст */
+}
+
+.status[class="2"],
+.status.rejected {
+    background-color: #dc3545; /* Красный */
+    color: #fff; /* Белый текст */
+}
+        
     </style>
 </head>
 
@@ -78,94 +304,206 @@
     {{> header}}
     <h1>Мои заявки</h1>
 
+    <h2 class="section-title">Записи на услуги</h2>
     <div class="card-container">
-        {{#each enrollments}}
-        <div class="card">
-            <h2>{{ServiceName}}</h2>
-            <p><strong>Тип:</strong> {{Name}}</p>
-            <p><strong>Специалист:</strong> {{MasterName}}</p>
-            <p><strong>Дата:</strong> {{Date}}</p>
-            <p><strong>Адресс:</strong> {{Address}}</p>
-            <p><strong>Время:</strong> <span class="formatted-time">{{Time}}</span></p>
-            <p><strong>Продолжительность:</strong> {{Duration}} ч.</p>
+        {{#if enrollments.length}}
+            {{#each enrollments}}
+            <div class="card">
+                <h3>{{ServiceName}}</h3>
+                <p><strong>Тип:</strong> {{Name}}</p>
+                <p><strong>Специалист:</strong> {{MasterName}}</p>
+                <p><strong>Дата:</strong> {{formatDate Date}}</p>
+                <p><strong>Адрес:</strong> {{Address}}</p>
+                <p><strong>Время:</strong> {{formatTime Time}}</p>
+                <p><strong>Продолжительность:</strong> {{Duration}} ч.</p>
+                <p><strong>Стоимость в час:</strong> {{PriceForHour}} руб.</p>
 
-            <div class="status 
-                {{#if (eq Status 0)}}pending
-                {{else if (eq Status 1)}}approved
-                {{else if (eq Status 2)}}cancelled
-                {{/if}}">
-                {{#if (eq Status 0)}}На рассмотрении
-                {{else if (eq Status 1)}}Одобрено
-                {{else if (eq Status 2)}}Отклонено
+                <div class="status {{Status}} style="color: #000; background-color: #6c757d;"">
+                    {{#if (eq Status 0)}}На рассмотрении
+                    {{else if (eq Status 1)}}Одобрено
+                    {{else if (eq Status 2)}}Отклонено
+                    {{/if}}
+                </div>
+
+                {{#if (eq Status 0)}}
+                <button class="cancel-button" data-enrollment-id="{{EnrollmentId}}">Отменить заявку</button>
+                {{/if}}
+
+                {{#if Comments}}
+                <p><strong>Комментарий от специалиста:</strong> {{Comments}}</p>
                 {{/if}}
             </div>
+            {{/each}}
+        {{else}}
+            <p class="no-items-message">У вас пока нет записей на услуги</p>
+        {{/if}}
+    </div>
 
-            {{#if (eq Status 0)}}
-            <button class="cancel-button" data-enrollment-id="{{EnrollmentId}}">Отменить заявку</button>
-            {{/if}}
-                            {{#if Comments}}
-                    <p><strong>Комментрий от специалиста:</strong> {{Comments}}</p>
-                {{/if}}
+    <div class="section-divider"></div>
 
-        </div>
-        {{/each}}
+    <h2 class="section-title">Заявки на поиск специалистов</h2>
+    <div class="card-container">
+        {{#if requests.length}}
+            {{#each requests}}
+            <div class="request-card">
+                <h3>{{type}}</h3>
+                <p><strong>Дата мероприятия:</strong> {{formatDate date}}</p>
+                <p><strong>Место:</strong> {{location}}</p>
+                <p><strong>Адрес:</strong> {{address}}</p>
+                
+                <div class="progress-section">
+                    <p><strong>Прогресс подбора специалистов:</strong></p>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: {{multiply (divide totalSpecialistsApproved totalSpecialistsNeeded) 100}}%"></div>
+                    </div>
+                    <p>{{totalSpecialistsApproved}}/{{totalSpecialistsNeeded}} специалистов</p>
+                </div>
+
+                <div class="status {{status}}">
+                    {{#if (eq status "pending")}}На рассмотрении
+                    {{else if (eq status "in_progress")}}В процессе
+                    {{else if (eq status "completed")}}Завершено
+                    {{else}}{{status}}
+                    {{/if}}
+                </div>
+
+                <div class="professions-section">
+                    <h4>Требуемые специалисты:</h4>
+                    {{#if professions.length}}
+                        {{#each professions}}
+                        <div class="profession-item">
+                            <h5>{{name}}</h5>
+                            <p>Требуется: {{needed}}, Подтверждено: {{approved}}</p>
+                            
+                            {{#if masters.length}}
+                            <div class="masters-list">
+                                <h6>Отклики специалистов:</h6>
+                                {{#each masters}}
+                                <div class="specialist-card">
+                                    <div class="specialist-info">
+                                        <h6>{{name}}</h6>
+                                        <p>{{description}}</p>
+                                        <span class="specialist-status {{status}}">
+                                            {{#if (eq status "pending")}}Ожидает подтверждения
+                                            {{else if (eq status "approved")}}Подтвержден
+                                            {{else if (eq status "rejected")}}Отклонен
+                                            {{/if}}
+                                        </span>
+                                    </div>
+                                    
+                                    {{#if (eq status "pending")}}
+                                    <div class="specialist-actions">
+                                        <button class="btn btn-approve" onclick="handleResponse('{{responseId}}', 'approve')">
+                                            Подтвердить
+                                        </button>
+                                        <button class="btn btn-reject" onclick="handleResponse('{{responseId}}', 'reject')">
+                                            Отклонить
+                                        </button>
+                                    </div>
+                                    {{/if}}
+                                </div>
+                                {{/each}}
+                            </div>
+                            {{else}}
+                            <p class="no-items-message">Пока нет откликов от специалистов</p>
+                            {{/if}}
+                        </div>
+                        {{/each}}
+                    {{else}}
+                        <p class="no-items-message">Нет требуемых специалистов</p>
+                    {{/if}}
+                </div>
+            </div>
+            {{/each}}
+        {{else}}
+            <p class="no-items-message">У вас пока нет заявок на поиск специалистов</p>
+        {{/if}}
     </div>
 </body>
 
-
 <script>
     document.addEventListener("DOMContentLoaded", function () {
+        // Форматирование времени
         const timeElements = document.querySelectorAll('.formatted-time');
-
         timeElements.forEach(function (timeElement) {
             const timeString = timeElement.textContent.trim();
             const date = new Date(timeString);
-            const hours = date.getUTCHours().toString().padStart(2, '0'); // Часы (в формате 2 знаков)
-            const minutes = date.getUTCMinutes().toString().padStart(2, '0'); // Минуты (в формате 2 знаков)
+            const hours = date.getUTCHours().toString().padStart(2, '0');
+            const minutes = date.getUTCMinutes().toString().padStart(2, '0');
             const formattedTime = `${hours}:${minutes}`;
             timeElement.textContent = formattedTime;
         });
 
+        // Обработка кнопок отмены
         const cancelButtons = document.querySelectorAll('.cancel-button');
-
         cancelButtons.forEach(function (button) {
             button.addEventListener('click', function () {
                 const enrollmentId = button.getAttribute('data-enrollment-id');
+                const isConfirmed = confirm("Вы уверены, что хотите отменить заявку? После этого её нельзя будет вернуть.");
 
-                const isConfirmed = confirm("Вы уверены, что хотите отклонить заявку? После этого её нельзя будет вернуть.");
-
-                if (!isConfirmed) {
-                    return; // Если пользователь не подтвердил, ничего не делаем
-                }
+                if (!isConfirmed) return;
 
                 fetch(`/enrollment/cancel/${enrollmentId}`, {
                     method: 'PUT',
                     headers: {
                         'Content-Type': 'application/json',
                     },
-                    body: JSON.stringify({
-                        status: 2, // Новый статус заявки: отклонено
-                    }),
+                    body: JSON.stringify({ status: 2 })
                 })
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.success) {
-                            button.closest('.card').querySelector('.status').classList.remove('pending');
-                            button.closest('.card').querySelector('.status').classList.add('cancelled');
-                            button.closest('.card').querySelector('.status').textContent = "Отклонено";
-                            button.style.display = 'none'; // Скрыть кнопку после отмены
-                        } else {
-                            alert('Ошибка при отмене заявки');
-                        }
-                    })
-                    .catch(error => {
-                        console.error('Ошибка при отправке запроса:', error);
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        const card = button.closest('.card');
+                        const statusElement = card.querySelector('.status');
+                        statusElement.classList.remove('pending', '0');
+                        statusElement.classList.add('cancelled');
+                        statusElement.textContent = "Отменено";
+                        button.style.display = 'none';
+                    } else {
                         alert('Ошибка при отмене заявки');
-                    });
+                    }
+                })
+                .catch(error => {
+                    console.error('Ошибка при отправке запроса:', error);
+                    alert('Ошибка при отмене заявки');
+                });
             });
         });
     });
 
+    // Функция для обработки отклика специалиста
+    function handleResponse(responseId, action) {
+        if (!confirm(`Вы уверены, что хотите ${action === 'approve' ? 'подтвердить' : 'отклонить'} этого специалиста?`)) {
+            return;
+        }
+
+        fetch(`/request/response/${action}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                responseId: responseId
+            })
+        })
+        .then(response => {
+            if (!response.ok) {
+                return response.json().then(err => Promise.reject(err));
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (data.success) {
+                location.reload(); // Перезагружаем страницу для обновления статусов
+            } else {
+                alert(data.message || 'Произошла ошибка при обработке отклика');
+            }
+        })
+        .catch(error => {
+            console.error('Ошибка:', error);
+            alert(error.message || 'Произошла ошибка при обработке отклика');
+        });
+    }
 </script>
 
 </html>

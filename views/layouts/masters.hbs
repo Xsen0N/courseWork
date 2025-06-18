@@ -1,14 +1,16 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ru">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Просмотр мастеров</title>
+    <title>Наши специалисты</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <style>
         body {
             font-family: 'Arial', sans-serif;
-            background-color: #f9f9f9;
+            background-color: #f5f5f5;
             margin: 0;
             padding: 0;
             color: #333;
@@ -16,106 +18,141 @@
 
         .container {
             max-width: 1200px;
-            margin: 20px auto;
+            margin: 40px auto;
             padding: 0 20px;
         }
 
-        .filters {
-            display: flex;
-            align-items: center;
+        .page-title {
+            text-align: center;
+            color: #2c3e50;
             margin-bottom: 20px;
-            gap: 15px;
-            flex-wrap: wrap;
+            font-size: 2.5em;
         }
 
-        .filters input[type="text"],
-        .filters select,
-        .filters input[type="checkbox"] {
+        .sorting-controls {
+            margin-bottom: 30px;
+            padding: 20px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .sorting-controls select {
             padding: 10px;
-            border: 1px solid #ccc;
+            margin-right: 15px;
+            border: 1px solid #ddd;
             border-radius: 5px;
-            font-size: 1rem;
-            transition: border-color 0.3s;
+            font-size: 14px;
+            cursor: pointer;
         }
 
-        .filters input[type="text"]:focus,
-        .filters select:focus,
-        .filters input[type="checkbox"]:focus {
-            border-color: #007bff;
+        .sorting-controls select:focus {
             outline: none;
+            border-color: #3498db;
         }
 
-        .filters label {
-            font-size: 1rem;
-            color: #555;
-        }
-
-        .master-cards {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 20px;
+        .masters-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 30px;
+            padding: 20px;
         }
 
         .master-card {
-            background-color: #fff;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            background: white;
             border-radius: 10px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
             padding: 20px;
-            width: calc(33.33% - 20px);
-            transition: transform 0.3s, box-shadow 0.3s;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
+            transition: transform 0.3s ease;
         }
 
         .master-card:hover {
             transform: translateY(-5px);
-            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15);
         }
 
-        .master-card h2 {
-            margin-top: 0;
-            font-size: 1.2rem;
-            color: #007bff;
+        .master-image {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            border-radius: 5px;
+            margin-bottom: 15px;
         }
 
-        .master-card p {
-            margin: 10px 0;
+        .master-info {
+            padding: 20px;
+        }
+
+        .master-name {
+            font-size: 1.4em;
+            color: #2c3e50;
+            margin: 0 0 10px 0;
+        }
+
+        .master-profession {
+            color: #0d6efd;
+            font-weight: 500;
+            margin-bottom: 10px;
+        }
+
+        .master-description {
             color: #666;
-            font-size: 1rem;
+            font-size: 0.95em;
+            line-height: 1.5;
+            margin-bottom: 15px;
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
         }
 
-        .master-card a {
-            display: inline-block;
-            margin-top: 15px;
-            text-decoration: none;
-            color: #007bff;
+        .master-price {
             font-weight: bold;
-            transition: color 0.3s;
+            color: #198754;
+            margin: 10px 0;
         }
 
-        .master-card a:hover {
-            color: #0056b3;
-            text-decoration: underline;
+        .view-profile {
+            display: inline-block;
+            padding: 10px 20px;
+            background: #3498db;
+            color: white;
+            text-decoration: none;
+            border-radius: 25px;
+            transition: background 0.3s;
+            text-align: center;
+            width: 100%;
+            box-sizing: border-box;
         }
 
-        .master-card span {
-            display: block;
-            margin-top: 10px;
-            font-size: 0.9rem;
-            color: #888;
+        .view-profile:hover {
+            background: #2980b9;
+            text-decoration: none;
+            color: white;
         }
 
-        /* Адаптивность */
-        @media (max-width: 992px) {
-            .master-card {
-                width: calc(50% - 20px);
-            }
+        .no-masters {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+            font-size: 1.2em;
         }
 
         @media (max-width: 768px) {
-            .master-card {
+            .container {
+                margin: 20px auto;
+            }
+
+            .masters-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .page-title {
+                font-size: 2em;
+            }
+
+            .sorting-controls select {
                 width: 100%;
+                margin-bottom: 10px;
             }
         }
     </style>
@@ -123,91 +160,84 @@
 
 <body>
     {{> header}}
-    <div class="container">
-        <div class="filters">
-            <!-- Поиск по имени -->
-            <input type="text" id="searchInput" placeholder="Поиск по имени...">
+    <div class="container mt-4">
+        <h1 class="text-center mb-4">Наши специалисты</h1>
 
-            <!-- Фильтр по наличию описания -->
-            <input type="checkbox" id="descriptionFilter">
-            <label for="descriptionFilter">С описанием</label>
-
-            <!-- Фильтр по цене -->
-            <select id="priceFilter">
-                <option value="">Любая цена</option>
-                <option value="0-50">До 50 BYN</option>
-                <option value="50-100">50–100 BYN</option>
-                <option value="100+">Более 100 BYN</option>
-            </select>
+        <div class="row mb-4">
+            <div class="col">
+                <select id="sortProfession" class="form-select">
+                    <option value="">Все специальности</option>
+                    {{#each professions}}
+                    <option value="{{this.ProfessionName}}">{{this.ProfessionName}}</option>
+                    {{/each}}
+                </select>
+            </div>
+            <div class="col">
+                <select id="sortPrice" class="form-select">
+                    <option value="">Сортировка по цене</option>
+                    <option value="asc">По возрастанию</option>
+                    <option value="desc">По убыванию</option>
+                </select>
+            </div>
         </div>
 
-        <div id="masters-list" class="master-cards">
+        <div class="masters-grid">
             {{#each masters}}
-            <div class="master-card" data-name="{{Name}}" data-description="{{Description}}"
-                data-type="{{this.class.ArtType}}" data-price="{{PriceForHour}}">
-                <h2>{{Name}}</h2>
-                {{#if Photo}}
-                <img src="data:{{PhotoType}};base64,{{Photo}}" alt="Фото мастера {{Name}}" width="100">
+            <div class="master-card" data-price="{{this.PriceForHour}}" data-profession="{{this.profession.ProfessionName}}">
+                {{#if this.Photo}}
+                <img src="data:{{this.PhotoType}};base64,{{this.Photo}}" alt="{{this.Name}}" class="master-image">
+                {{else}}
+                <img src="/images/default-avatar.png" alt="Default Avatar" class="master-image">
                 {{/if}}
-                <p>{{Description}}</p>
-                <p><strong>Цена за час:</strong> {{PriceForHour}} BYN</p>
-                <a href="/masters/{{this.MasterId}}">Посмотреть детали</a>
+                <h4>{{this.Name}}</h4>
+                <div class="master-profession">{{this.profession.ProfessionName}}</div>
+                <p>{{this.Description}}</p>
+                <div class="master-price">{{this.PriceForHour}} BYN / час</div>
+                <a href="/masters/{{this.MasterId}}" class="btn btn-primary w-100">
+                    <i class="fas fa-user"></i> Посмотреть профиль
+                </a>
+            </div>
+            {{else}}
+            <div class="col-12 text-center">
+                <i class="fas fa-users-slash fa-3x text-muted mb-3"></i>
+                <p class="text-muted">В данный момент нет доступных специалистов</p>
             </div>
             {{/each}}
         </div>
     </div>
 
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        // Функция для поиска мастеров по имени
-        document.getElementById('searchInput').addEventListener('input', function () {
-            var searchText = this.value.toLowerCase();
-            filterMasters();
-        });
+        document.addEventListener('DOMContentLoaded', function() {
+            const mastersGrid = document.querySelector('.masters-grid');
+            const sortProfession = document.getElementById('sortProfession');
+            const sortPrice = document.getElementById('sortPrice');
 
-        // Функция для фильтрации мастеров по наличию описания
-        document.getElementById('descriptionFilter').addEventListener('change', function () {
-            filterMasters();
-        });
+            function filterAndSortMasters() {
+                const cards = Array.from(mastersGrid.getElementsByClassName('master-card'));
+                const selectedProfession = sortProfession.value;
+                const selectedPriceSort = sortPrice.value;
 
-        // Функция для фильтрации мастеров по цене
-        document.getElementById('priceFilter').addEventListener('change', function () {
-            filterMasters();
-        });
+                cards.forEach(card => {
+                    const cardProfession = card.dataset.profession;
+                    card.style.display = selectedProfession && selectedProfession !== cardProfession ? 'none' : 'block';
+                });
 
-        // Основная функция фильтрации
-        function filterMasters() {
-            var searchText = document.getElementById('searchInput').value.toLowerCase();
-            var descriptionFilter = document.getElementById('descriptionFilter').checked;
-            var priceFilter = document.getElementById('priceFilter').value;
+                if (selectedPriceSort) {
+                    const sortedCards = cards.sort((a, b) => {
+                        const priceA = parseFloat(a.dataset.price);
+                        const priceB = parseFloat(b.dataset.price);
+                        return selectedPriceSort === 'asc' ? priceA - priceB : priceB - priceA;
+                    });
 
-            var masterCards = document.querySelectorAll('.master-card');
-            masterCards.forEach(function (card) {
-                var name = card.dataset.name.toLowerCase();
-                var description = card.dataset.description;
-                var price = parseFloat(card.dataset.price); // Преобразуем цену в число
-
-                var matchesSearch = name.includes(searchText);
-                var matchesDescription = !descriptionFilter || description.trim() !== '';
-                var matchesPrice = true;
-
-                // Фильтрация по цене
-                if (priceFilter) {
-                    if (priceFilter === "0-50") {
-                        matchesPrice = price <= 50;
-                    } else if (priceFilter === "50-100") {
-                        matchesPrice = price > 50 && price <= 100;
-                    } else if (priceFilter === "100+") {
-                        matchesPrice = price > 100;
-                    }
+                    sortedCards.forEach(card => mastersGrid.appendChild(card));
                 }
+            }
 
-                if (matchesSearch && matchesDescription && matchesPrice) {
-                    card.style.display = 'block';
-                } else {
-                    card.style.display = 'none';
-                }
-            });
-        }
+            sortProfession.addEventListener('change', filterAndSortMasters);
+            sortPrice.addEventListener('change', filterAndSortMasters);
+        });
     </script>
 </body>
 

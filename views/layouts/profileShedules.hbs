@@ -7,6 +7,10 @@
     <title>Расписание</title>
     <!-- Подключение FullCalendar CSS -->
     <link href="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.css" rel="stylesheet">
+    <!-- Подключение Tippy.js -->
+    <script src="https://unpkg.com/@popperjs/core@2"></script>
+    <script src="https://unpkg.com/tippy.js@6"></script>
+    <link rel="stylesheet" href="https://unpkg.com/tippy.js@6/themes/light-border.css"/>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -25,8 +29,8 @@
 
         .calendar {
             flex: 1;
-            max-width: 400px;
-            padding: 10px;
+            min-width: 800px;
+            padding: 20px;
             background: #fff;
             border: 1px solid #ddd;
             border-radius: 8px;
@@ -34,7 +38,10 @@
         }
 
         .schedule {
-            flex: 2;
+            flex: 1;
+            padding: 20px;
+            max-height: 90vh;
+            overflow-y: auto;
         }
 
         h1 {
@@ -53,35 +60,62 @@
         .card {
             background: #fff;
             border: 1px solid #ddd;
-            border-radius: 8px;
+            border-radius: 12px;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            overflow: hidden;
-            width: 400px;
-            transition: box-shadow 0.3s ease;
+            margin-bottom: 20px;
+            transition: all 0.3s ease;
         }
 
-        .card.highlighted {
-            box-shadow: 0 0 10px rgba(231, 76, 60, 0.8); /* Подсветка карточки */
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.15);
         }
 
         .card-body {
-            padding: 20px;
+            padding: 25px;
         }
 
         .card-title {
-            font-size: 1.6em;
             color: #2c3e50;
-            margin-bottom: 10px;
+            font-size: 1.5rem;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #4caf50;
+        }
+
+        .info-section {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 15px;
+        }
+
+        .info-section:last-child {
+            margin-bottom: 0;
+        }
+
+        .info-section-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
 
         .card-text {
-            font-size: 1.2em;
-            color: #555;
+            color: #34495e;
             line-height: 1.6;
         }
 
+        .card-text p {
+            margin: 8px 0;
+        }
+
         .card-text strong {
-            color: #333;
+            color: #2c3e50;
+            font-weight: 600;
         }
 
         .status {
@@ -111,6 +145,58 @@
             font-size: 0.9em;
             padding: 2px 5px;
         }
+
+        .fc-event {
+            cursor: pointer;
+            padding: 4px;
+        }
+
+        .fc-event-title {
+            font-weight: bold;
+            margin-bottom: 4px;
+        }
+
+        .fc-event-details {
+            font-size: 0.9em;
+            color: #666;
+        }
+
+        /* Стили для всплывающих подсказок */
+        .tippy-box[data-theme~='light-border'] {
+            background-color: white;
+            color: #333;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Стили для прокрутки */
+        .schedule::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .schedule::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 4px;
+        }
+
+        .schedule::-webkit-scrollbar-thumb {
+            background: #4caf50;
+            border-radius: 4px;
+        }
+
+        .schedule::-webkit-scrollbar-thumb:hover {
+            background: #45a049;
+        }
+
+        /* Анимация для подсветки карточки */
+        @keyframes highlight {
+            0% { box-shadow: 0 4px 6px rgba(76, 175, 80, 0.1); }
+            50% { box-shadow: 0 4px 15px rgba(76, 175, 80, 0.5); }
+            100% { box-shadow: 0 4px 6px rgba(76, 175, 80, 0.1); }
+        }
+
+        .highlight {
+            animation: highlight 2s ease-in-out;
+        }
     </style>
 </head>
 
@@ -127,18 +213,53 @@
             <h1 class="my-4">Мое расписание</h1>
             <div class="row">
                 {{#each shedulesDetailes}}
-                <div class="col-md-4" id="card-{{@index}}">
+                <div class="col-md-6" id="card-{{@index}}">
                     <div class="card">
                         <div class="card-body">
-                            <h5 class="card-title">{{this.Name}}</h5>
-                            <p class="card-text">
-                                <strong>Дата:</strong> <span class="formatted-date">{{this.Enrollment.Date}}</span><br>
-                                <strong>Время:</strong> <span class="formatted-time">{{this.Enrollment.Time}}</span><br>
-                                <strong>Продолжительность:</strong> {{this.Enrollment.Duration}} час(ов)<br>
-                                <strong>Адрес:</strong> {{this.Enrollment.Address}}<br>
-                                <strong>Логин пользователя:</strong> {{this.User.Login}}<br>
-                                <strong>Почта для связи:</strong> {{this.User.Email}}<br>
-                            </p>
+                            <h3 class="card-title">
+                                {{#if Service}}
+                                    {{Service.Name}}
+                                {{else}}
+                                    Событие {{EventId}}
+                                {{/if}}
+                            </h3>
+
+                            <!-- Секция информации о событии -->
+                            <div class="info-section">
+                                <div class="info-section-title">📅 Информация о событии</div>
+                                <div class="card-text">
+                                    <p><strong>Дата и время:</strong> {{formatDate StartDate}} {{formatTime StartDate}} - {{formatTime EndDate}}</p>
+                                    {{#if Service.Description}}
+                                        <p><strong>Описание услуги:</strong> {{Service.Description}}</p>
+                                    {{/if}}
+                                </div>
+                            </div>
+
+                            <!-- Секция информации о клиенте -->
+                            {{#if User}}
+                            <div class="info-section">
+                                <div class="info-section-title">👤 Информация о клиенте</div>
+                                <div class="card-text">
+                                    <p><strong>Имя:</strong> {{User.Login}}</p>
+                                    <p><strong>Email:</strong> {{User.Email}}</p>
+                                </div>
+                            </div>
+                            {{/if}}
+
+                            <!-- Секция информации о записи -->
+                            {{#if Enrollment}}
+                            <div class="info-section">
+                                <div class="info-section-title">📍 Детали записи</div>
+                                <div class="card-text">
+                                    {{#if Enrollment.Address}}
+                                        <p><strong>Адрес:</strong> {{Enrollment.Address}}</p>
+                                    {{/if}}
+                                    {{#if Enrollment.Comments}}
+                                        <p><strong>Комментарии:</strong> {{Enrollment.Comments}}</p>
+                                    {{/if}}
+                                </div>
+                            </div>
+                            {{/if}}
                         </div>
                     </div>
                 </div>
@@ -151,40 +272,28 @@
     <script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.js"></script>
     <script>
         document.addEventListener("DOMContentLoaded", function () {
-            // Форматирование времени
-            const timeElements = document.querySelectorAll('.formatted-time');
-            timeElements.forEach(function (timeElement) {
-                const timeString = timeElement.textContent.trim(); // Получаем строку времени
-                const date = new Date(timeString); // Создаем объект Date
-                if (!isNaN(date)) {
-                    const hours = date.getUTCHours().toString().padStart(2, '0'); // Часы
-                    const minutes = date.getUTCMinutes().toString().padStart(2, '0'); // Минуты
-                    timeElement.textContent = `${hours}:${minutes}`; // Форматируем время
-                } else {
-                    timeElement.textContent = "Неверное время"; // Обработка ошибки
-                }
-            });
+            // Функция форматирования даты
+            function formatDate(date) {
+                return new Date(date).toLocaleDateString('ru-RU', {
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric'
+                });
+            }
 
-            // Форматирование даты (если нужно)
-            const dateElements = document.querySelectorAll('.formatted-date');
-            dateElements.forEach(function (dateElement) {
-                const dateString = dateElement.textContent.trim(); // Получаем строку даты
-                const date = new Date(dateString); // Создаем объект Date
-                if (!isNaN(date)) {
-                    const day = date.getUTCDate().toString().padStart(2, '0'); // День
-                    const month = (date.getUTCMonth() + 1).toString().padStart(2, '0'); // Месяц
-                    const year = date.getUTCFullYear(); // Год
-                    dateElement.textContent = `${day}.${month}.${year}`; // Форматируем дату
-                } else {
-                    dateElement.textContent = "Неверная дата"; // Обработка ошибки
-                }
-            });
+            // Функция форматирования времени
+            function formatTime(date) {
+                return new Date(date).toLocaleTimeString('ru-RU', {
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    hour12: false
+                });
+            }
 
-            // Инициализация календаря
             const calendarEl = document.getElementById('calendar');
             const calendar = new FullCalendar.Calendar(calendarEl, {
                 initialView: 'dayGridMonth',
-                locale: 'ru', // Локализация на русский
+                locale: 'ru',
                 headerToolbar: {
                     left: 'prev,next today',
                     center: 'title',
@@ -193,28 +302,60 @@
                 events: [
                     {{#each shedulesDetailes}}
                     {
-                        title: '*',
-                        start: '{{this.Enrollment.Date}}',
-                        color: '#e74c3c', // Красный цвет для занятых дат
-                        allDay: true,
-                        extendedProps: {
-                            cardId: 'card-{{@index}}' // Связываем событие с карточкой
-                        }
+                        id: '{{EventId}}',
+                        title: '{{#if Service}}{{Service.Name}}{{else}}Событие {{EventId}}{{/if}}',
+                        start: '{{StartDate}}',
+                        end: '{{EndDate}}',
+                        color: '#4caf50',
+                        allDay: false,
+                        description: '{{#if Service}}{{Service.Description}}{{/if}}',
+                        address: '{{#if Enrollment}}{{Enrollment.Address}}{{/if}}',
+                        client: '{{#if User}}{{User.Login}}{{/if}}',
+                        email: '{{#if User}}{{User.Email}}{{/if}}'
                     },
                     {{/each}}
                 ],
-                eventContent: function (arg) {
-                    return { html: `<div class="fc-event-time">${arg.event.title}</div>` };
+                eventTimeFormat: {
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    hour12: false
                 },
-                eventClick: function (info) {
-                    document.querySelectorAll('.card').forEach(card => {
-                        card.classList.remove('highlighted');
+                eventContent: function(arg) {
+                    const event = arg.event;
+                    return {
+                        html: `
+                            <div class="fc-content">
+                                <div class="fc-event-title">${event.title}</div>
+                                <div class="fc-event-details">
+                                    ${event.extendedProps.client ? `<div>👤 ${event.extendedProps.client}</div>` : ''}
+                                    ${event.extendedProps.address ? `<div>📍 ${event.extendedProps.address}</div>` : ''}
+                                </div>
+                            </div>
+                        `
+                    };
+                },
+                eventDidMount: function(info) {
+                    // Добавляем всплывающую подсказку с полной информацией
+                    const event = info.event;
+                    const tooltip = `
+                        <div style="padding: 10px;">
+                            <strong>${event.title}</strong><br>
+                            <strong>Время:</strong> ${event.start.toLocaleTimeString('ru-RU', {hour: '2-digit', minute: '2-digit'})} - 
+                                                  ${event.end.toLocaleTimeString('ru-RU', {hour: '2-digit', minute: '2-digit'})}<br>
+                            ${event.extendedProps.description ? `<strong>Описание:</strong> ${event.extendedProps.description}<br>` : ''}
+                            ${event.extendedProps.address ? `<strong>Адрес:</strong> ${event.extendedProps.address}<br>` : ''}
+                            ${event.extendedProps.client ? `<strong>Клиент:</strong> ${event.extendedProps.client}<br>` : ''}
+                            ${event.extendedProps.email ? `<strong>Email:</strong> ${event.extendedProps.email}` : ''}
+                        </div>
+                    `;
+                    
+                    tippy(info.el, {
+                        content: tooltip,
+                        allowHTML: true,
+                        placement: 'top',
+                        interactive: true,
+                        theme: 'light-border'
                     });
-                    const cardId = info.event.extendedProps.cardId;
-                    const card = document.getElementById(cardId).querySelector('.card');
-                    card.classList.add('highlighted');
-                    // Прокручиваем страницу к карточке
-                    card.scrollIntoView({ behavior: 'smooth', block: 'center' });
                 }
             });
             calendar.render();

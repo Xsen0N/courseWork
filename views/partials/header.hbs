@@ -1,135 +1,321 @@
 <header class="header">
     <nav class="nav">
-        <ul>
-            <li><a href="/masters">Специалисты</a></li>
-            <li><a href="/services">Предлагаемые услуги</a></li>
-            <li><a href="/request">Оставить заявку</a></li>
-            <li><a href="/">Виды мероприятий</a></li>
-            <li id="my-applications" style="display: none;"><a href="/enrollment/order">Мои заявки</a></li>
-            <li id="login-logout"><a id="login-logout-link" href="/auth/login">Вход</a></li>
-            <li id="login-master" style="display: none;"><a href="/auth/loginMaster">Войти как специалист</a></li>
+        <div class="logo">
+            <i class="fas fa-hands-helping"></i>
+            <span>EventStaff</span>
+        </div>
+        
+        <ul class="nav-links">
+            <li><a href="/masters"><i class="fas fa-users"></i> Специалисты</a></li>
+            <li><a href="/services"><i class="fas fa-list-alt"></i> Услуги</a></li>
+            <li><a href="/request"><i class="fas fa-calendar-plus"></i> Заявка</a></li>
+            <li><a href="/"><i class="fas fa-calendar-check"></i> Мероприятия</a></li>
+            <li id="my-applications" style="display: none;"><a href="/enrollment/order"><i class="fas fa-clipboard-list"></i> Мои заявки</a></li>
+            <li id="login-master" style="display: none;"><a href="/auth/loginMaster"><i class="fas fa-user-shield"></i> Для специалистов</a></li>
         </ul>
+        
+        <div class="auth-section">
+            <a id="login-logout-link" href="/auth/login" class="auth-btn">
+                <i class="fas fa-sign-in-alt"></i> <span>Вход</span>
+            </a>
+        </div>
+        
+        <div class="menu-toggle" id="mobile-menu">
+            <span></span>
+            <span></span>
+            <span></span>
+        </div>
     </nav>
 </header>
+
 <style>
-     /* Стили для хедера */
+    /* Современные стили для хедера */
     .header {
-        background-color: #4CAF50; /* Зеленый цвет фона */
+        background: linear-gradient(135deg, #2c3e50, #1a2a3a);
         color: #fff;
-        padding: 20px 0;
-        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2); /* Тень для визуального выделения */
+        padding: 0;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+        position: sticky;
+        top: 0;
+        z-index: 1000;
+        font-family: 'Roboto', sans-serif;
     }
 
     .nav {
-        text-align: center;
         display: flex;
-        justify-content: center;
+        justify-content: space-between;
+        align-items: center;
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: 0 20px;
+        height: 70px;
+    }
+
+    .logo {
+        display: flex;
+        align-items: center;
+        font-size: 1.6rem;
+        font-weight: 700;
+        color: #fff;
+    }
+
+    .logo i {
+        color: #4CAF50;
+        margin-right: 12px;
+        font-size: 1.8rem;
+    }
+
+    .logo span {
+        background: linear-gradient(to right, #4CAF50, #8BC34A);
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
+    }
+
+    .nav-links {
+        display: flex;
+        list-style: none;
+        margin: 0;
+        padding: 0;
+        transition: all 0.4s ease;
+    }
+
+    .nav-links li {
+        position: relative;
+    }
+
+    .nav-links li a {
+        color: #ecf0f1;
+        text-decoration: none;
+        padding: 25px 18px;
+        display: flex;
+        align-items: center;
+        font-size: 1rem;
+        font-weight: 500;
+        transition: all 0.3s ease;
+        height: 70px;
+    }
+
+    .nav-links li a i {
+        margin-right: 8px;
+        font-size: 1.1rem;
+        transition: transform 0.3s ease;
+    }
+
+    .nav-links li a:hover {
+        background: rgba(255, 255, 255, 0.08);
+    }
+
+    .nav-links li a:hover i {
+        transform: translateY(-3px);
+        color: #4CAF50;
+    }
+
+    .auth-section {
+        display: flex;
         align-items: center;
     }
 
-    .nav ul {
-        list-style-type: none;
-        padding: 0;
-        margin: 0;
+    .auth-btn {
         display: flex;
-        gap: 15px; /* Расстояние между элементами меню */
-    }
-
-    .nav ul li {
-        display: inline-block;
-    }
-
-    .nav ul li a {
+        align-items: center;
+        background: rgba(76, 175, 80, 0.15);
         color: #fff;
+        padding: 10px 20px;
+        border-radius: 30px;
         text-decoration: none;
-        padding: 10px 15px;
-        border-radius: 5px;
-        transition: background-color 0.3s ease, transform 0.3s ease;
-        font-size: 1rem;
+        transition: all 0.3s ease;
+        border: 1px solid rgba(76, 175, 80, 0.3);
     }
 
-    .nav ul li a:hover {
-        background-color: #45a049; /* Темно-зеленый цвет при наведении */
-        transform: translateY(-2px); /* Легкое поднятие при наведении */
+    .auth-btn:hover {
+        background: rgba(76, 175, 80, 0.3);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(76, 175, 80, 0.2);
     }
 
-    #login-logout {
-        margin-left: auto; /* Сдвигаем кнопку "Вход/Выход" вправо */
-        padding-right: 20px;
+    .auth-btn i {
+        margin-right: 8px;
     }
 
-    #login-logout-link {
-        color: #fff;
-        text-decoration: none;
-        padding: 10px 15px;
-        border-radius: 5px;
-        transition: background-color 0.3s ease, transform 0.3s ease;
+    /* Активная ссылка */
+    .nav-links li a.active {
+        background: rgba(76, 175, 80, 0.2);
+        position: relative;
     }
 
-    #login-logout-link:hover {
-        background-color: #45a049; /* Темно-зеленый цвет при наведении */
-        transform: translateY(-2px); /* Легкое поднятие при наведении */
+    .nav-links li a.active::after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        height: 3px;
+        background: #4CAF50;
+    }
+
+    /* Мобильное меню */
+    .menu-toggle {
+        display: none;
+        flex-direction: column;
+        cursor: pointer;
+        padding: 10px;
+    }
+
+    .menu-toggle span {
+        height: 3px;
+        width: 25px;
+        background: #fff;
+        margin: 3px 0;
+        border-radius: 3px;
+        transition: all 0.3s ease;
+    }
+
+    /* Анимация мобильного меню */
+    .menu-toggle.active span:nth-child(1) {
+        transform: translateY(8px) rotate(45deg);
+    }
+
+    .menu-toggle.active span:nth-child(2) {
+        opacity: 0;
+    }
+
+    .menu-toggle.active span:nth-child(3) {
+        transform: translateY(-8px) rotate(-45deg);
     }
 
     /* Адаптивность */
-    @media (max-width: 768px) {
-        .nav ul {
-            flex-direction: column;
-            gap: 10px;
+    @media (max-width: 992px) {
+        .nav-links li a span {
+            display: none;
         }
+        
+        .nav-links li a i {
+            margin-right: 0;
+            font-size: 1.3rem;
+        }
+        
+        .nav-links li a {
+            padding: 25px 15px;
+        }
+    }
 
-        .nav ul li {
+    @media (max-width: 768px) {
+        .menu-toggle {
+            display: flex;
+        }
+        
+        .nav-links {
+            position: absolute;
+            top: 70px;
+            left: 0;
+            right: 0;
+            background: #2c3e50;
+            flex-direction: column;
+            align-items: center;
+            height: 0;
+            overflow: hidden;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        }
+        
+        .nav-links.active {
+            height: auto;
+            padding: 20px 0;
+        }
+        
+        .nav-links li {
             width: 100%;
             text-align: center;
         }
-
-        #login-logout {
-            margin-left: 0;
-            padding-right: 0;
+        
+        .nav-links li a {
+            height: auto;
+            padding: 15px;
+            justify-content: center;
+        }
+        
+        .nav-links li a i {
+            margin-right: 10px;
+            display: inline-block;
+        }
+        
+        .nav-links li a span {
+            display: inline-block;
+        }
+        
+        .auth-btn span {
+            display: none;
         }
     }
 </style>
 
 <script>
-   document.addEventListener('DOMContentLoaded', function () {
-    const loginLogoutLink = document.getElementById('login-logout-link');
-    const loginMasterLink = document.getElementById('login-master');
-    const myApplicationsLink = document.getElementById('my-applications');
-
-    const xhr = new XMLHttpRequest();
-    xhr.onreadystatechange = function () {
-        if (xhr.readyState === XMLHttpRequest.DONE) {
-            if (xhr.status === 200) {
-                const user = JSON.parse(xhr.responseText);
-
-                // Проверка на авторизацию
-                if (user.isAuthenticated) {
-                    // Если пользователь авторизован
-                    loginLogoutLink.textContent = 'Выход';
-                    loginLogoutLink.href = '/auth/logout';
-                    myApplicationsLink.style.display = 'inline-block';
-
-                    loginMasterLink.style.display = 'none';
+    document.addEventListener('DOMContentLoaded', function() {
+        const menuToggle = document.getElementById('mobile-menu');
+        const navLinks = document.querySelector('.nav-links');
+        const loginLogoutLink = document.getElementById('login-logout-link');
+        const loginMasterLink = document.getElementById('login-master');
+        const myApplicationsLink = document.getElementById('my-applications');
+        
+        // Мобильное меню
+        menuToggle.addEventListener('click', function() {
+            this.classList.toggle('active');
+            navLinks.classList.toggle('active');
+        });
+        
+        // Закрытие меню при клике на ссылку
+        document.querySelectorAll('.nav-links a').forEach(link => {
+            link.addEventListener('click', () => {
+                menuToggle.classList.remove('active');
+                navLinks.classList.remove('active');
+            });
+        });
+        
+        // Проверка статуса авторизации
+        const xhr = new XMLHttpRequest();
+        xhr.onreadystatechange = function() {
+            if (xhr.readyState === XMLHttpRequest.DONE) {
+                if (xhr.status === 200) {
+                    const user = JSON.parse(xhr.responseText);
+                    
+                    if (user.isAuthenticated) {
+                        loginLogoutLink.innerHTML = '<i class="fas fa-sign-out-alt"></i> <span>Выход</span>';
+                        loginLogoutLink.href = '/auth/logout';
+                        
+                        if (myApplicationsLink) {
+                            myApplicationsLink.style.display = 'block';
+                        }
+                        
+                        if (loginMasterLink) {
+                            loginMasterLink.style.display = 'none';
+                        }
+                    } else {
+                        loginLogoutLink.innerHTML = '<i class="fas fa-sign-in-alt"></i> <span>Вход</span>';
+                        loginLogoutLink.href = '/auth/login';
+                        
+                        if (myApplicationsLink) {
+                            myApplicationsLink.style.display = 'none';
+                        }
+                        
+                        if (loginMasterLink) {
+                            loginMasterLink.style.display = 'block';
+                        }
+                    }
                 } else {
-                    // Если пользователь не авторизован
-                    loginLogoutLink.textContent = 'Вход';
-                    loginLogoutLink.href = '/auth/login';
-
-                    // Прячем "Мои заявки"
-                    myApplicationsLink.style.display = 'none';
-
-                    // Показываем "Вход как мастер"
-                    loginMasterLink.style.display = 'inline-block';
+                    console.error('Ошибка при проверке статуса авторизации');
                 }
-            } else {
-                console.error('Произошла ошибка при выполнении AJAX-запроса');
             }
-        }
-    };
-
-    xhr.open('GET', '/auth/status', true); 
-    xhr.send();
-});
-
-
+        };
+        
+        xhr.open('GET', '/auth/status', true);
+        xhr.send();
+        
+        // Подсветка активной ссылки
+        const currentPath = window.location.pathname;
+        document.querySelectorAll('.nav-links a').forEach(link => {
+            if (link.getAttribute('href') === currentPath) {
+                link.classList.add('active');
+            }
+        });
+    });
 </script>

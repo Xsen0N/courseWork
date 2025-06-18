@@ -1,12 +1,9 @@
-const { Router } = require('express');
-const masterRouter = new Router();
-const masterController = require('../controllers/masterController');
+const Router = require('express');
+const router = new Router();
+const mastersController = require('../controllers/mastersController');
 
+router
+    .get('/', mastersController.getMastersList)
+    .get('/:id', mastersController.getMasterDetails);
 
-masterRouter
-    .get('/', masterController.getAllMasters)
-    .get('/:id', masterController.getOneMaster)
-    .post('/:id',  masterController.updateMaster)
-    .delete('/:id', masterController.deleteMaster)
- 
-module.exports = masterRouter;
+module.exports = router;

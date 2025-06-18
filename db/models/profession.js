@@ -1,11 +1,11 @@
 module.exports = function(sequelize, DataTypes) {
-    return sequelize.define('Profession', {
+    return sequelize.define('Professions', {
         ProfessionId: {
             type: DataTypes.INTEGER,
             primaryKey: true,
             autoIncrement: true 
         },
-        ProfessionName: {
+        ProfessionName: { 
             type: DataTypes.STRING(1000),
             allowNull: false
         },
@@ -15,8 +15,15 @@ module.exports = function(sequelize, DataTypes) {
         }
     }, {
         sequelize,
-        tableName: 'Profession',
-        timestamps: false
+        tableName: 'Professions',
+        schema: 'dbo',
+        timestamps: false,
+        indexes: [
+            {
+                unique: true,
+                fields: ['ProfessionName']
+            }
+        ]
     });
-  };
+};
   

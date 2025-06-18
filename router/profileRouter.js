@@ -21,6 +21,8 @@ profileRouter
     .post("/editOrder", profileController.editOrder)
     .post('/gallery/upload', upload.single('photo'), profileController.uploadPhotoForGallery.bind(profileController))
     .delete('/deleteService/:id', profileController.deleteService)
-    .delete('/gallery/delete/:galleryId', profileController.deleteGallery );
+    .delete('/gallery/delete/:galleryId', profileController.deleteGallery)
+    .get("/requests", profileController.getSpecialistRequestsPage)
+    .post("/requests/respond", profileController.respondToRequest);
 
 module.exports = profileRouter;

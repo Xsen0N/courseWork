@@ -40,7 +40,18 @@ module.exports = function(sequelize, DataTypes) {
     }, {
       sequelize,
       tableName: 'Enrollment',
-      timestamps: false
+      timestamps: false,
+      indexes: [
+        {
+          fields: ['UserId']
+        },
+        {
+          fields: ['ServiceId']
+        },
+        {
+          fields: ['Status']
+        }
+      ]
     });
   };
   

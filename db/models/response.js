@@ -1,5 +1,5 @@
 module.exports = (sequelize, DataTypes) => {
-  const Response = sequelize.define('Response', {
+  return sequelize.define('Response', {
     ResponseId: {
       type: DataTypes.INTEGER,
       primaryKey: true,
@@ -7,15 +7,30 @@ module.exports = (sequelize, DataTypes) => {
     },
     RequestId: {
       type: DataTypes.INTEGER,
-      allowNull: false
+      allowNull: false,
+      references: {
+        model: 'Requests',
+        key: 'RequestId',
+        schema: 'dbo'
+      }
     },
     ProfessionId: {
       type: DataTypes.INTEGER,
-      allowNull: false
+      allowNull: false,
+      references: {
+        model: 'Professions',
+        key: 'ProfessionId',
+        schema: 'dbo'
+      }
     },
     MasterId: {
       type: DataTypes.INTEGER,
-      allowNull: false
+      allowNull: false,
+      references: {
+        model: 'Master',
+        key: 'MasterId',
+        schema: 'dbo'
+      }
     },
     status: {
       type: DataTypes.ENUM('pending', 'approved', 'rejected'),
@@ -26,15 +41,18 @@ module.exports = (sequelize, DataTypes) => {
     }
   }, {
     tableName: 'Responses',
+    schema: 'dbo',
     timestamps: true,
-    schema: 'dbo' 
+    indexes: [
+      {
+        fields: ['RequestId']
+      },
+      {
+        fields: ['ProfessionId']
+      },
+      {
+        fields: ['MasterId']
+      }
+    ]
   });
-
-  Response.associate = function(models) {
-    Response.belongsTo(models.Request, { foreignKey: 'RequestId' });
-    Response.belongsTo(models.Profession, { foreignKey: 'ProfessionId' });
-    Response.belongsTo(models.Master, { foreignKey: 'MasterId' });
-  };
-
-  return Response;
 };

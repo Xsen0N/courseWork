@@ -1,18 +1,22 @@
 module.exports = (sequelize, DataTypes) => {
   return sequelize.define('Notification', {
-    NotificationId:{
+    NotificationId: {
       type: DataTypes.INTEGER,
       primaryKey: true,
       autoIncrement: true
     },
-    Message: DataTypes.TEXT,
+    Message: {
+      type: DataTypes.TEXT,
+      allowNull: false
+    },
     Type: {
       type: DataTypes.ENUM(
         'new_request',
         'application_status',
         'system_alert',
         'response_approved',
-        'request_completed'
+        'request_completed',
+        'request_progress'
       ),
       allowNull: false
     },
@@ -20,16 +24,21 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.BOOLEAN,
       defaultValue: false
     },
-    Metadata: DataTypes.TEXT,
-    UsersId: {
+    Metadata: {
+      type: DataTypes.TEXT,
+      allowNull: true
+    },
+    UserId: {
       type: DataTypes.INTEGER,
-      allowNull: true,
-      field: 'UserId'  // Явно указываем имя колонки в БД
+      allowNull: true
     },
     MasterId: {
       type: DataTypes.INTEGER,
-      allowNull: true,
-      field: 'MasterId'
+      allowNull: true
     }
+  }, {
+    sequelize,
+    tableName: 'Notifications',
+    timestamps: true // Включаем timestamps
   });
 };

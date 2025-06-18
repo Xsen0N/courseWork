@@ -1,0 +1,276 @@
+.chat-button {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background-color: #007bff;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+    z-index: 1000;
+    transition: transform 0.3s;
+}
+
+.chat-button:hover {
+    transform: scale(1.1);
+}
+
+.chat-button i {
+    font-size: 24px;
+}
+
+.chat-window {
+    position: fixed;
+    bottom: 100px;
+    right: 20px;
+    width: 350px;
+    height: 500px;
+    background-color: white;
+    border-radius: 10px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+    display: none;
+    flex-direction: column;
+    z-index: 1000;
+    overflow: hidden;
+    transform: translateZ(0);
+    backface-visibility: hidden;
+    perspective: 1000px;
+}
+
+.chat-window.active {
+    display: flex;
+}
+
+.chat-header {
+    padding: 15px;
+    background-color: #007bff;
+    color: white;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.chat-close {
+    cursor: pointer;
+    font-size: 20px;
+}
+
+.chat-messages {
+    flex-grow: 1;
+    padding: 15px;
+    overflow-y: auto;
+    will-change: transform;
+    transform: translateZ(0);
+}
+
+.chat-input-area {
+    padding: 15px;
+    border-top: 1px solid #ddd;
+    display: flex;
+    gap: 10px;
+}
+
+.chat-input {
+    flex-grow: 1;
+    padding: 8px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    outline: none;
+}
+
+.chat-send {
+    padding: 8px 15px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.message {
+    margin-bottom: 15px;
+    max-width: 80%;
+    padding: 10px 15px;
+    border-radius: 15px;
+}
+
+.message.bot {
+    background-color: #f8f9fa;
+    margin-right: auto;
+}
+
+.message.user {
+    background-color: #007bff;
+    color: white;
+    margin-left: auto;
+}
+
+.options-container {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin: 10px 0;
+}
+
+.option-button {
+    padding: 12px 15px;
+    background-color: #f8f9fa;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-align: left;
+    white-space: pre-line;
+    line-height: 1.4;
+    width: 100%;
+}
+
+.option-button:hover {
+    background-color: #e9ecef;
+}
+
+.option-button.selected {
+    background-color: #cce5ff;
+    border-color: #007bff;
+}
+
+.option-description {
+    font-size: 0.9em;
+    color: #6c757d;
+    margin-top: 5px;
+}
+
+.confirm-buttons {
+    display: flex;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.confirm-button, .skip-button {
+    flex: 1;
+    padding: 10px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.confirm-button {
+    background-color: #007bff;
+    color: white;
+}
+
+.confirm-button:hover {
+    background-color: #0056b3;
+}
+
+.skip-button {
+    background-color: #6c757d;
+    color: white;
+}
+
+.skip-button:hover {
+    background-color: #5a6268;
+}
+
+.specialist-card {
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 15px;
+    margin: 10px 0;
+    background-color: white;
+    transition: all 0.2s ease;
+    cursor: pointer;
+    will-change: transform, box-shadow;
+}
+
+.specialist-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    border-color: #007bff;
+}
+
+.specialist-card h3 {
+    margin: 0 0 10px;
+    color: #2d3748;
+}
+
+.specialist-card p {
+    margin: 8px 0;
+    color: #4a5568;
+}
+
+.specialist-card ul {
+    margin: 10px 0;
+    padding-left: 20px;
+    color: #4a5568;
+}
+
+.specialist-card li {
+    margin: 5px 0;
+}
+
+.types-container {
+    margin: 10px 0;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.type-card {
+    background-color: #f8f9fa;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 12px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.type-card:hover {
+    background-color: #e9ecef;
+    transform: translateY(-2px);
+}
+
+.type-card h3 {
+    margin: 0 0 8px 0;
+    color: #2d3748;
+    font-size: 1.1em;
+}
+
+.type-card p {
+    margin: 0;
+    color: #4a5568;
+    font-size: 0.9em;
+}
+
+.chat-loading {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(255, 255, 255, 0.8);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    z-index: 1001;
+}
+
+.loading-spinner {
+    width: 40px;
+    height: 40px;
+    border: 4px solid #f3f3f3;
+    border-top: 4px solid #007bff;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+} 

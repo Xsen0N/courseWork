@@ -1,0 +1,132 @@
+{{#if types}}
+<div class="container mt-5">
+    <h2 class="text-center mb-4">Поиск специалистов</h2>
+    
+    <!-- Фильтры -->
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <label for="typeSelect" class="form-label">Тип мероприятия:</label>
+            <select class="form-select" id="typeSelect">
+                <option value="">Все типы</option>
+                {{#each types}}
+                <option value="{{this.TypeId}}">{{this.TypeName}}</option>
+                {{/each}}
+            </select>
+        </div>
+        <div class="col-md-6">
+            <label class="form-label">Критерии:</label>
+            <div class="criteria-container">
+                {{#each criterias}}
+                <div class="form-check">
+                    <input class="form-check-input criteria-checkbox" type="checkbox" value="{{this.CriteriasId}}" id="criteria{{this.CriteriasId}}">
+                    <label class="form-check-label" for="criteria{{this.CriteriasId}}">
+                        {{this.Name}}
+                    </label>
+                </div>
+                {{/each}}
+            </div>
+        </div>
+    </div>
+
+    <!-- Карточки мастеров -->
+    <div class="row" id="mastersContainer">
+        {{#each masters}}
+        <div class="col-md-4 mb-4">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title">{{this.Name}}</h5>
+                    <p class="card-text"><strong>Тип:</strong> {{this.TypeName}}</p>
+                    <p class="card-text"><strong>Описание:</strong> {{this.Description}}</p>
+                    <p class="card-text"><strong>Цена за час:</strong> {{this.PriceForHour}} руб.</p>
+                    {{#if this.Criterias}}
+                    <p class="card-text"><strong>Критерии:</strong> {{this.Criterias}}</p>
+                    {{/if}}
+                </div>
+            </div>
+        </div>
+        {{/each}}
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const typeSelect = document.getElementById('typeSelect');
+        const criteriaCheckboxes = document.querySelectorAll('.criteria-checkbox');
+        const mastersContainer = document.getElementById('mastersContainer');
+
+        // Функция для обновления списка мастеров
+        function updateMasters() {
+            const selectedType = typeSelect.value;
+            const selectedCriteria = Array.from(criteriaCheckboxes)
+                .filter(cb => cb.checked)
+                .map(cb => cb.value);
+
+            fetch('/api/filterMasters', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    typeId: selectedType,
+                    criteriaIds: selectedCriteria
+                })
+            })
+            .then(response => response.json())
+            .then(masters => {
+                mastersContainer.innerHTML = masters.map(master => `
+                    <div class="col-md-4 mb-4">
+                        <div class="card h-100">
+                            <div class="card-body">
+                                <h5 class="card-title">${master.Name}</h5>
+                                <p class="card-text"><strong>Тип:</strong> ${master.TypeName}</p>
+                                <p class="card-text"><strong>Описание:</strong> ${master.Description}</p>
+                                <p class="card-text"><strong>Цена за час:</strong> ${master.PriceForHour} руб.</p>
+                                ${master.Criterias ? `<p class="card-text"><strong>Критерии:</strong> ${master.Criterias}</p>` : ''}
+                            </div>
+                        </div>
+                    </div>
+                `).join('');
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Произошла ошибка при фильтрации мастеров');
+            });
+        }
+
+        // Обработчики событий для фильтров
+        typeSelect.addEventListener('change', updateMasters);
+        criteriaCheckboxes.forEach(checkbox => {
+            checkbox.addEventListener('change', updateMasters);
+        });
+    });
+</script>
+
+<style>
+    .criteria-container {
+        max-height: 200px;
+        overflow-y: auto;
+        border: 1px solid #ddd;
+        padding: 10px;
+        border-radius: 4px;
+    }
+
+    .form-check {
+        margin-bottom: 8px;
+    }
+
+    .card {
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        transition: transform 0.2s;
+    }
+
+    .card:hover {
+        transform: translateY(-5px);
+    }
+</style>
+{{else}}
+<div class="container mt-5">
+    <div class="alert alert-info" role="alert">
+        Нет доступных типов мероприятий.
+    </div>
+</div>
+{{/if}} 

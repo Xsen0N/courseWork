@@ -661,6 +661,52 @@ class AdminController {
                 });
             }
         }
+
+    // Метод для отображения страницы со всеми пользователями
+    async getUsersPage(req, res) {
+        try {
+            // Получаем список всех пользователей
+            const users = await models.users.findAll({
+                raw: true,
+                order: [['UserId', 'ASC']]
+            });
+
+            // Получаем список всех мастеров
+            const masters = await models.masters.findAll({
+                include: [{
+                    model: models.professions,
+                    as: 'Profession',
+                    attributes: ['ProfessionName']
+                }],
+                raw: true,
+                nest: true
+            });
+
+            // Получаем список всех клиентов
+            const clients = await models.clients.findAll({
+                raw: true
+            });
+
+            console.log("Пользователи:", JSON.stringify(users, null, 2));
+            console.log("Мастера:", JSON.stringify(masters, null, 2));
+            console.log("Клиенты:", JSON.stringify(clients, null, 2));
+
+            // Рендерим страницу с данными
+            res.render('admin/users', {
+                users: users,
+                masters: masters,
+                clients: clients,
+                layout: false
+            });
+        } catch (error) {
+            console.error('Ошибка при получении данных пользователей:', error);
+            res.status(500).render('error', {
+                message: 'Ошибка при получении данных пользователей',
+                error: error,
+                layout: false
+            });
+        }
+    }
 }
 
 

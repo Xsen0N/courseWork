@@ -1,5 +1,6 @@
 const _users = require("./users");
 const _gallery = require("./gallery");
+const _professions = require("./profession");
 const _masters = require("./masters");
 const _criterias = require("./criterias");
 const _types = require("./types");
@@ -7,7 +8,6 @@ const _enrollment = require("./enrollment");
 const _scheduler = require("./scheduler");
 const _services = require("./services");
 const _events = require("./events");
-const _professions = require("./profession");
 const _requests = require("./requests");
 const _requestProfession = require("./requestProfession");
 const _serviceCriterias = require("./serviceCriterias"); // Добавлена промежуточная модель
@@ -20,6 +20,7 @@ function initModels(sequelize) {
   // Инициализация всех моделей
   const users = _users(sequelize, DataTypes);
   const gallery = _gallery(sequelize, DataTypes);
+  const professions = _professions(sequelize, DataTypes);
   const masters = _masters(sequelize, DataTypes);
   const types = _types(sequelize, DataTypes);
   const enrollment = _enrollment(sequelize, DataTypes);
@@ -27,7 +28,6 @@ function initModels(sequelize) {
   const services = _services(sequelize, DataTypes);
   const criterias = _criterias(sequelize, DataTypes);
   const events = _events(sequelize, DataTypes);
-  const professions = _professions(sequelize, DataTypes);
   const requests = _requests(sequelize, DataTypes);
   const requestProfession = _requestProfession(sequelize, DataTypes);
   const serviceCriterias = _serviceCriterias(sequelize, DataTypes);
@@ -87,6 +87,10 @@ function initModels(sequelize) {
     foreignKey: 'RequestId',
     otherKey: 'CriteriasId'
   });
+  requests.hasMany(responses, {
+    foreignKey: 'RequestId',
+    onDelete: 'CASCADE'
+  });
 
   // Ассоциации для Professions
   professions.hasMany(masters, { 
@@ -126,28 +130,32 @@ function initModels(sequelize) {
   });
 
   // Ассоциации для Notifications
-notifications.belongsTo(users, {
-  foreignKey: 'UserId', // Используем тот же регистр, что и в модели
-  as: 'user',
-  onDelete: 'CASCADE'
-});
+  notifications.belongsTo(users, {
+    foreignKey: 'UserId',
+    targetKey: 'ID',
+    as: 'user',
+    onDelete: 'CASCADE'
+  });
 
-notifications.belongsTo(masters, {
-  foreignKey: 'MasterId', // Используем тот же регистр, что и в модели
-  as: 'master',
-  onDelete: 'CASCADE'
-});
+  notifications.belongsTo(masters, {
+    foreignKey: 'MasterId',
+    targetKey: 'MasterId',
+    as: 'master',
+    onDelete: 'CASCADE'
+  });
 
-// Для пользователей и мастеров
-users.hasMany(notifications, {
-  foreignKey: 'UserId',
-  as: 'notifications'
-});
+  // Для пользователей и мастеров
+  users.hasMany(notifications, {
+    foreignKey: 'UserId',
+    sourceKey: 'ID',
+    as: 'notifications'
+  });
 
-masters.hasMany(notifications, {
-  foreignKey: 'MasterId',
-  as: 'notifications'
-});
+  masters.hasMany(notifications, {
+    foreignKey: 'MasterId',
+    sourceKey: 'MasterId',
+    as: 'notifications'
+  });
 
   // Ассоциации для Responses
   responses.belongsTo(requests, { 

@@ -174,26 +174,38 @@ class AuthController {
     }
 
     async registerMaster(req, res) {
-        const { username, realName, password, professionId  } = req.body;
+        const { username, name, password, professionId, description, priceForHour } = req.body;
             
         const hashedPassword = bcrypt.hashSync(password, 10);   
         const existingUser = await models.masters.findOne({
             where: {
-                Name: username
+                Login: username
             }
         });
+        
         if (existingUser) {
             req.session.previousUrl = req.headers.referer;  
-            return res.render('./layouts/error.hbs', {layout: "error.hbs", errorMessage: 'Это имя уже используется уже используется' });
+            return res.render('./layouts/error.hbs', {layout: "error.hbs", errorMessage: 'Этот логин уже используется' });
         }
 
-        await models.masters.create({
-            Login: username,
-            Name: realName,
-            Password: hashedPassword,
-            ProfessionId: professionId 
-        });       
-        res.redirect('/auth/loginMaster');
+        try {
+            await models.masters.create({
+                Login: username,
+                Name: name,
+                Password: hashedPassword,
+                ProfessionId: professionId,
+                Description: description || null,
+                PriceForHour: priceForHour || null
+            });       
+            res.redirect('/auth/loginMaster');
+        } catch (error) {
+            console.error('Ошибка при регистрации мастера:', error);
+            req.session.previousUrl = req.headers.referer;
+            return res.render('./layouts/error.hbs', {
+                layout: "error.hbs", 
+                errorMessage: 'Ошибка при регистрации. Пожалуйста, проверьте правильность заполнения всех обязательных полей.'
+            });
+        }
     }
 }
 

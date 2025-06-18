@@ -11,39 +11,13 @@ class NotificationController {
                 return res.status(401).json({ error: 'Необходима авторизация' });
             }
 
-            // Для администраторов - дополнительная проверка
-            if (!isMaster && req.session.userId) {
-                const user = await models.users.findByPk(req.session.userId, { raw: true });
-                if (user && user.Role === 1) {
-                    // Админ может запросить уведомления для конкретного пользователя/мастера
-                    if (req.query.userId) {
-                        return this.getNotifications(userId, false, res);
-                    }
-                    if (req.query.masterId) {
-                        return this.getNotifications(userId, true, res);
-                    }
-                }
-            }
-
             // Получаем уведомления для текущего пользователя/мастера
-            const whereClause = isMaster ? { masterId: userId } : { userId };
+            const whereClause = isMaster ? { MasterId: userId } : { UserId: userId };
             
             const notifications = await models.notifications.findAll({
                 where: whereClause,
                 order: [['createdAt', 'DESC']],
-                limit: 50,
-                include: [
-                    {
-                        model: models.users,
-                        as: 'user',
-                        attributes: ['ID', 'FirstName', 'LastName']
-                    },
-                    {
-                        model: models.masters,
-                        as: 'master',
-                        attributes: ['MasterId', 'FirstName', 'LastName']
-                    }
-                ]
+                limit: 50
             });
             
             res.json(notifications);
@@ -66,17 +40,10 @@ class NotificationController {
                 return res.status(401).json({ error: 'Необходима авторизация' });
             }
 
-            // Проверка прав администратора
-            let isAdmin = false;
-            if (!isMaster && req.session.userId) {
-                const user = await models.users.findByPk(req.session.userId, { raw: true });
-                isAdmin = user && user.Role === 1;
-            }
-
-            const whereClause = { id };
-            if (!isAdmin) {
-                whereClause[isMaster ? 'masterId' : 'userId'] = userId;
-            }
+            const whereClause = { 
+                NotificationId: id,
+                [isMaster ? 'MasterId' : 'UserId']: userId 
+            };
 
             const [updatedCount] = await models.notifications.update(
                 { isRead: true },
@@ -106,17 +73,10 @@ class NotificationController {
                 return res.status(401).json({ error: 'Необходима авторизация' });
             }
     
-            // Проверка прав администратора
-            let isAdmin = false;
-            if (!isMaster && req.session.userId) {
-                const user = await models.users.findByPk(req.session.userId, { raw: true });
-                isAdmin = user && user.Role === 1;
-            }
-    
-            const whereClause = { isRead: false };
-            if (!isAdmin) {
-                whereClause[isMaster ? 'masterId' : 'userId'] = userId;
-            }
+            const whereClause = { 
+                isRead: false,
+                [isMaster ? 'MasterId' : 'UserId']: userId 
+            };
     
             const [updatedCount] = await models.notifications.update(
                 { isRead: true },
